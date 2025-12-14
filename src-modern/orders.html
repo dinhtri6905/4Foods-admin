@@ -616,6 +616,50 @@
         </div>
     </div>
 
+    <!-- ==================== ORDER DETAIL MODAL ==================== -->
+    <div class="modal fade" id="orderDetailModal" tabindex="-1" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+            <div class="modal-content bg-dark border-secondary">
+                
+                <!-- Modal Header -->
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-white" id="orderDetailModalLabel">
+                        <i class="bi bi-receipt me-2"></i>Chi tiết đơn hàng
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="modal-body" id="orderDetailContent">
+                    <!-- Loading State -->
+                    <div class="text-center py-5" id="orderDetailLoading">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="text-muted mt-3 mb-0">Đang tải thông tin đơn hàng...</p>
+                    </div>
+
+                    <!-- Error State -->
+                    <div class="alert alert-danger d-none" role="alert" id="orderDetailError">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span id="orderDetailErrorMessage"></span>
+                    </div>
+
+                    <!-- Content Container -->
+                    <div id="orderDetailData" class="d-none"></div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Đóng
+                    </button>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
     <!-- Page-specific Component -->
     <script type="module" src="./scripts/components/orders.js"></script>
 

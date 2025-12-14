@@ -1,4 +1,6 @@
 // src-modern/scripts/components/orders.js
+import { Modal } from 'bootstrap';
+
 import ApexCharts from 'apexcharts';
 import { OrdersService } from '../utils/services/orders.service.js';
 
@@ -32,7 +34,8 @@ export class OrdersManager {
             endDate: ''
         };
         this.currentPage = 1;
-
+        this.orderDetailModal = null;
+        
         // Expose to window for inline handlers
         window.ordersManager = this;
 
@@ -311,29 +314,20 @@ export class OrdersManager {
                                 type="button" data-bs-toggle="dropdown">
                             <i class="bi bi-three-dots"></i>
                         </button>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li>
-                                <a class="dropdown-item" href="#" 
-                                   onclick="window.ordersManager.viewOrder('${order._id}'); return false;">
+                                <a class="dropdown-item view-order-detail-btn" href="#" data-order-id="${order._id}">
                                     <i class="bi bi-eye me-2"></i>Xem chi tiết
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item" href="#" 
-                                   onclick="window.ordersManager.updateStatus('${order._id}', 'shipping'); return false;">
-                                    <i class="bi bi-truck me-2"></i>Đang giao
+                                <a class="dropdown-item" href="#" onclick="window.ordersManager.updateOrderStatus('${order._id}', 'delivered'); return false;">
+                                    <i class="bi bi-check-circle me-2"></i>Đánh dấu đã giao
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="#" 
-                                   onclick="window.ordersManager.updateStatus('${order._id}', 'delivered'); return false;">
-                                    <i class="bi bi-check-circle me-2"></i>Đã giao
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item text-danger" href="#" 
-                                   onclick="window.ordersManager.updateStatus('${order._id}', 'cancelled'); return false;">
+                                <a class="dropdown-item text-danger" href="#" onclick="window.ordersManager.cancelOrder('${order._id}'); return false;">
                                     <i class="bi bi-x-circle me-2"></i>Hủy đơn
                                 </a>
                             </li>
@@ -449,8 +443,266 @@ export class OrdersManager {
         `;
     }
 
-    // ==================== EVENT LISTENERS ====================
+    // ========== VIEW ORDER DETAIL ==========
+    async handleViewOrder(orderId) {
+        console.log('🔍 Opening order detail for ID:', orderId);
 
+        try {
+            // Khởi tạo modal (chỉ 1 lần)
+            if (!this.orderDetailModal) {
+                const modalEl = document.getElementById('orderDetailModal');
+                this.orderDetailModal = new Modal(modalEl);
+            }
+
+            // Reset về trạng thái loading
+            const loadingDiv = document.getElementById('orderDetailLoading');
+            const errorDiv = document.getElementById('orderDetailError');
+            const dataDiv = document.getElementById('orderDetailData');
+
+            loadingDiv.classList.remove('d-none');
+            errorDiv.classList.add('d-none');
+            dataDiv.classList.add('d-none');
+            dataDiv.innerHTML = '';
+
+            // Hiển thị modal
+            this.orderDetailModal.show();
+
+            // Gọi API
+            console.log('📡 Fetching order detail from API...');
+            const order = await OrdersService.getOrderDetail(orderId);
+            console.log('✅ Order data received:', order);
+
+            // Ẩn loading, hiện data
+            loadingDiv.classList.add('d-none');
+            dataDiv.classList.remove('d-none');
+
+            // Get status badge class and label
+            const statusConfig = {
+                'processing': { class: 'bg-info', label: 'Đang xử lý', icon: 'hourglass-split' },
+                'shipping': { class: 'bg-primary', label: 'Đang giao', icon: 'truck' },
+                'arrived': { class: 'bg-warning text-dark', label: 'Đã đến', icon: 'geo-alt-fill' },
+                'delivered': { class: 'bg-success', label: 'Đã giao', icon: 'check-circle-fill' },
+                'cancelled': { class: 'bg-secondary', label: 'Đã hủy', icon: 'x-circle-fill' },
+                'refund_pending': { class: 'bg-warning', label: 'Chờ hoàn tiền', icon: 'clock-history' },
+                'refunded': { class: 'bg-danger', label: 'Đã hoàn tiền', icon: 'arrow-counterclockwise' }
+            };
+
+            const statusInfo = statusConfig[order.status] || statusConfig['processing'];
+
+            // Render nội dung
+            dataDiv.innerHTML = `
+                <div class="row">
+                    <!-- Left Column: Order Info -->
+                    <div class="col-md-6">
+                        <!-- Order Summary Card -->
+                        <div class="card bg-secondary bg-opacity-25 border-0 mb-3">
+                            <div class="card-body">
+                                <h6 class="text-white mb-3 fw-bold">
+                                    <i class="bi bi-info-circle-fill me-2"></i>Thông tin đơn hàng
+                                </h6>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <small class="text-muted d-block">Mã đơn hàng</small>
+                                        <span class="text-white font-monospace">#${order._id.substring(0, 8).toUpperCase()}</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Ngày đặt</small>
+                                        <span class="text-white">${new Date(order.createdAt).toLocaleDateString('vi-VN', {
+                                            year: 'numeric', month: 'long', day: 'numeric', 
+                                            hour: '2-digit', minute: '2-digit'
+                                        })}</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Trạng thái</small>
+                                        <span class="badge ${statusInfo.class} px-3 py-2">
+                                            <i class="bi bi-${statusInfo.icon} me-1"></i>${statusInfo.label}
+                                        </span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Phương thức thanh toán</small>
+                                        <span class="text-white">
+                                            <i class="bi bi-${order.paymentMethod === 'cod' ? 'cash' : 'credit-card'} me-1"></i>
+                                            ${order.paymentMethod === 'cod' ? 'Tiền mặt (COD)' : 'MoMo'}
+                                        </span>
+                                    </div>
+                                    ${order.estimatedTime ? `
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Thời gian giao hàng dự kiến</small>
+                                        <span class="text-white">${order.estimatedTime.start} - ${order.estimatedTime.end}</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Customer Info Card -->
+                        ${order.user ? `
+                        <div class="card bg-primary bg-opacity-10 border-primary mb-3">
+                            <div class="card-body">
+                                <h6 class="text-primary mb-3 fw-bold">
+                                    <i class="bi bi-person-fill me-2"></i>Thông tin khách hàng
+                                </h6>
+                                <div class="mb-2">
+                                    <small class="text-muted d-block">Họ tên</small>
+                                    <span class="text-white">${order.user.fullname || order.user.name || 'Chưa cập nhật'}</span>
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted d-block">Số điện thoại</small>
+                                    <span class="text-white">
+                                        <i class="bi bi-telephone-fill me-1"></i>${order.user.phone || 'Chưa cập nhật'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block">Email</small>
+                                    <span class="text-white">
+                                        <i class="bi bi-envelope-fill me-1"></i>${order.user.email}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <!-- Delivery Address Card -->
+                        <div class="card bg-warning bg-opacity-10 border-warning">
+                            <div class="card-body">
+                                <h6 class="text-warning mb-3 fw-bold">
+                                    <i class="bi bi-geo-alt-fill me-2"></i>Địa chỉ giao hàng
+                                </h6>
+                                <div class="text-white">
+                                    <div class="mb-2">
+                                        <strong>${order.address.name || 'Người nhận'}</strong>
+                                    </div>
+                                    <div class="mb-1">
+                                        <i class="bi bi-telephone me-1"></i>${order.address.phone}
+                                    </div>
+                                    <div>
+                                        <i class="bi bi-house-door me-1"></i>
+                                        ${order.address.detail || ''}, 
+                                        ${order.address.ward || ''}, 
+                                        ${order.address.district || ''}, 
+                                        ${order.address.province || ''}
+                                    </div>
+                                    ${order.address.note ? `
+                                        <div class="mt-2 p-2 bg-dark bg-opacity-25 rounded">
+                                            <small class="text-muted">Ghi chú:</small>
+                                            <div class="text-white">${order.address.note}</div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Order Items & Payment -->
+                    <div class="col-md-6">
+                        <!-- Order Items Card -->
+                        <div class="card bg-secondary bg-opacity-25 border-0 mb-3">
+                            <div class="card-body">
+                                <h6 class="text-white mb-3 fw-bold">
+                                    <i class="bi bi-cart-fill me-2"></i>Sản phẩm (${order.items.length})
+                                </h6>
+                                <div class="list-group list-group-flush bg-transparent">
+                                    ${order.items.map(item => `
+                                        <div class="list-group-item bg-dark bg-opacity-50 border-secondary mb-2 rounded">
+                                            <div class="d-flex align-items-center">
+                                                <img src="${item.product?.imageUrl || item.product?.images?.[0] || '/assets/icons/icon-192.png'}" 
+                                                     class="rounded me-3" 
+                                                     width="60" height="60"
+                                                     onerror="this.onerror=null; this.src='/assets/icons/icon-192.png'">
+                                                <div class="flex-grow-1">
+                                                    <div class="text-white fw-bold mb-1">${item.name}</div>
+                                                    <div class="text-muted small">
+                                                        Số lượng: <span class="text-white">${item.quantity}</span> x 
+                                                        <span class="text-white">${item.price.toLocaleString('vi-VN')}đ</span>
+                                                    </div>
+                                                    ${item.shopId?.name ? `
+                                                        <div class="text-muted small">
+                                                            <i class="bi bi-shop me-1"></i>${item.shopId.name}
+                                                        </div>
+                                                    ` : ''}
+                                                </div>
+                                                <div class="text-end">
+                                                    <div class="text-success fw-bold">
+                                                        ${(item.price * item.quantity).toLocaleString('vi-VN')}đ
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Summary Card -->
+                        <div class="card bg-success bg-opacity-10 border-success">
+                            <div class="card-body">
+                                <h6 class="text-success mb-3 fw-bold">
+                                    <i class="bi bi-cash-coin me-2"></i>Thanh toán
+                                </h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Tạm tính:</span>
+                                    <span class="text-white">${order.subtotal.toLocaleString('vi-VN')}đ</span>
+                                </div>
+                                ${order.discount > 0 ? `
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Giảm giá:</span>
+                                    <span class="text-danger">-${order.discount.toLocaleString('vi-VN')}đ</span>
+                                </div>
+                                ` : ''}
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Phí vận chuyển:</span>
+                                    <span class="text-white">${order.deliveryFee.toLocaleString('vi-VN')}đ</span>
+                                </div>
+                                ${order.voucher ? `
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">
+                                        <i class="bi bi-ticket-perforated me-1"></i>Voucher:
+                                    </span>
+                                    <span class="text-warning">-${order.voucher.discount || 0}đ</span>
+                                </div>
+                                ` : ''}
+                                <hr class="border-secondary">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-white fw-bold fs-5">Tổng cộng:</span>
+                                    <span class="text-success fw-bold fs-4">${order.total.toLocaleString('vi-VN')}đ</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Shop Notes (if exists) -->
+                        ${order.shopNotes && order.shopNotes.length > 0 ? `
+                        <div class="card bg-info bg-opacity-10 border-info mt-3">
+                            <div class="card-body">
+                                <h6 class="text-info mb-3 fw-bold">
+                                    <i class="bi bi-sticky me-2"></i>Ghi chú cho cửa hàng
+                                </h6>
+                                ${order.shopNotes.map(note => `
+                                    <div class="mb-2">
+                                        <small class="text-muted d-block">Shop: ${note.shopId?.name || 'N/A'}</small>
+                                        <div class="text-white">${note.note || 'Không có ghi chú'}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+        } catch (error) {
+            console.error('❌ Error loading order detail:', error);
+
+            const loadingDiv = document.getElementById('orderDetailLoading');
+            const errorDiv = document.getElementById('orderDetailError');
+            const errorMsg = document.getElementById('orderDetailErrorMessage');
+
+            loadingDiv.classList.add('d-none');
+            errorDiv.classList.remove('d-none');
+            errorMsg.textContent = error.message || 'Không thể tải thông tin đơn hàng. Vui lòng thử lại.';
+        }
+    }
+
+    // ==================== EVENT LISTENERS ====================
     setupEventListeners() {
         // Search
         const searchInput = document.getElementById('search-input');
@@ -518,6 +770,21 @@ export class OrdersManager {
             this.updateBulkActions();
             this.renderOrdersList();
         });
+
+        // ========== VIEW ORDER DETAIL EVENT ==========
+        document.addEventListener('click', (e) => {
+            const viewBtn = e.target.closest('.view-order-detail-btn');
+            if (viewBtn) {
+                e.preventDefault();
+                const orderId = viewBtn.dataset.orderId;
+                console.log('👆 View button clicked, orderId:', orderId);
+                if (orderId) {
+                    this.handleViewOrder(orderId);
+                }
+            }
+        });
+
+        console.log('✅ Order detail event listener registered');        
     }
 
     updateBulkActions() {
