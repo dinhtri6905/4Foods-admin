@@ -216,7 +216,7 @@ export class ProductsManager {
                      height="60" 
                      style="object-fit: cover;"
                      alt="${product.name}"
-                     onerror="this.src='/assets/icons/icon-192.png'">
+                     onerror="this.onerror=null; this.src='assets/icons/icon-192.png'"
                 <div class="flex-grow-1">
                     <div class="fw-medium text-white">${product.name}</div>
                     <small class="text-muted">${product.category}</small>
@@ -297,7 +297,7 @@ export class ProductsManager {
                                                             height="50" 
                                                             style="object-fit: cover;"
                                                             alt="${product.name}"
-                                                            onerror="this.src='/assets/icons/icon-192.png'">
+                                                            onerror="this.onerror=null; this.src='assets/icons/icon-192.png'"
                                                         <div class="flex-grow-1">
                                                             <div class="fw-medium text-white small text-truncate">${product.name}</div>
                                                             <div class="text-primary fw-bold small">${(product.price || 0).toLocaleString('vi-VN')}đ</div>
@@ -389,7 +389,7 @@ export class ProductsManager {
                              height="40" 
                              style="object-fit: cover;"
                              alt="${product.name}"
-                             onerror="this.src='/assets/icons/icon-192.png'">
+                             onerror="this.onerror=null; this.src='assets/icons/icon-192.png'"
                         <div>
                             <div class="fw-medium text-white small">${product.name}</div>
                             <small class="text-muted">${product.category}</small>

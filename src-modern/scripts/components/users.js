@@ -79,9 +79,18 @@ export class UsersManager {
         try {
             console.log('📊 Loading recent activities...');
             this.data.recentActivities = await UsersService.getRecentActivities(20);
+            
+            // Kiểm tra nếu API trả về dữ liệu hợp lệ
+            if (!Array.isArray(this.data.recentActivities)) {
+                console.warn('⚠️ API returned invalid data format');
+                this.data.recentActivities = [];
+            }
+            
             console.log('✅ Loaded activities:', this.data.recentActivities.length);
         } catch (error) {
             console.error('❌ Error loading activities:', error);
+            console.error('API Endpoint:', error.config?.url || 'Unknown');
+            console.error('Status:', error.response?.status || 'Network Error');
             this.data.recentActivities = [];
         }
     }
@@ -262,7 +271,7 @@ export class UsersManager {
                              class="rounded-circle me-2" 
                              width="32" height="32" 
                              alt="${user.name || user.email}"
-                             onerror="this.src='/assets/icons/icon-192.png'">
+                             onerror="this.onerror=null; this.src='/assets/icons/icon-192.png'">
                         <div>
                             <div class="fw-medium text-white">${user.name || user.email}</div>
                             <small class="text-muted">${user.email}</small>

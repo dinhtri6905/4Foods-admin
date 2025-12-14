@@ -355,7 +355,7 @@ export class OrdersManager {
                      width="30" height="30" 
                      style="object-fit: cover;"
                      alt="${firstItem.name}"
-                     onerror="this.src='/assets/icons/icon-192.png'">
+                     onerror="this.onerror=null; this.src='assets/icons/icon-192.png'"
                 <div>
                     <div class="small text-white">${firstItem.name}</div>
                     ${remaining > 0 ? `<small class="text-muted">+${remaining} sản phẩm khác</small>` : ''}
