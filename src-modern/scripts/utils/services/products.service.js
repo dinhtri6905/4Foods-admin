@@ -33,5 +33,9 @@ export const ProductsService = {
 
     async deleteProduct(productId) {
         return await apiClient.delete(`${ENDPOINTS.PRODUCTS.DELETE}/${productId}`);
+    },
+
+    async getProductDetail(id) {
+        return await apiClient.get(`/products/${id}`); 
     }
 };

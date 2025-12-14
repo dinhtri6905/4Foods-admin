@@ -1,4 +1,6 @@
 // src-modern/scripts/components/products.js
+import { Modal } from 'bootstrap';
+
 import ApexCharts from 'apexcharts';
 import { ProductsService } from '../utils/services/products.service.js';
 
@@ -25,7 +27,8 @@ export class ProductsManager {
             maxPrice: ''
         };
         this.currentPage = 1;
-        
+        this.productDetailModal = null;
+
         window.productsManager = this;
         
         if (document.getElementById('total-products-count')) {
@@ -420,7 +423,7 @@ export class ProductsManager {
                         </button>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-eye me-2"></i>View</a></li>
+                            <li><a class="dropdown-item view-product-detail-btn" href="#" data-product-id="${product._id}"><i class="bi bi-eye me-2"></i>View</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="#" onclick="window.productsManager.deleteProduct('${product._id}'); return false;">
                                 <i class="bi bi-trash me-2"></i>Delete
@@ -482,6 +485,286 @@ export class ProductsManager {
             });
         }
     }
+
+    // ========== VIEW PRODUCT DETAIL ==========
+    async handleViewProduct(productId) {
+        console.log('🔍 Opening product detail for ID:', productId);
+
+        try {
+            // Khởi tạo modal (chỉ 1 lần)
+            if (!this.productDetailModal) {
+                const modalEl = document.getElementById('productDetailModal');
+                this.productDetailModal = new Modal(modalEl);
+            }
+
+            // Reset về trạng thái loading
+            const loadingDiv = document.getElementById('productDetailLoading');
+            const errorDiv = document.getElementById('productDetailError');
+            const dataDiv = document.getElementById('productDetailData');
+
+            loadingDiv.classList.remove('d-none');
+            errorDiv.classList.add('d-none');
+            dataDiv.classList.add('d-none');
+            dataDiv.innerHTML = '';
+
+            // Hiển thị modal
+            this.productDetailModal.show();
+
+            // Gọi API
+            console.log('📡 Fetching product detail from API...');
+            const product = await ProductsService.getProductDetail(productId);
+            console.log('✅ Product data received:', product);
+
+            // Ẩn loading, hiện data
+            loadingDiv.classList.add('d-none');
+            dataDiv.classList.remove('d-none');
+
+            // Get status badge class
+            const statusBadgeClass = {
+                'pending': 'bg-warning text-dark',
+                'displayed': 'bg-success',
+                'hidden': 'bg-secondary',
+                'violated': 'bg-danger'
+            }[product.status] || 'bg-secondary';
+
+            // Render nội dung
+            dataDiv.innerHTML = `
+                <div class="row">
+                    <!-- Left Column: Product Image & Basic Info -->
+                    <div class="col-md-5">
+                        <img src="${product.imageUrl}" 
+                             class="img-fluid rounded border border-2 border-primary mb-3" 
+                             alt="${product.name}"
+                             onerror="this.onerror=null; this.src='/assets/icons/icon-192.png'">
+                        
+                        <div class="d-flex gap-2 mb-3 flex-wrap">
+                            <span class="badge ${statusBadgeClass} px-3 py-2 fs-6">
+                                ${product.status.toUpperCase()}
+                            </span>
+                            <span class="badge bg-info px-3 py-2">
+                                <i class="bi bi-tag-fill me-1"></i>${product.category}
+                            </span>
+                            ${product.discountPercent > 0 ? `
+                                <span class="badge bg-danger px-3 py-2">
+                                    -${product.discountPercent}% OFF
+                                </span>
+                            ` : ''}
+                        </div>
+
+                        <!-- Seller Info -->
+                        ${product.seller ? `
+                        <div class="card bg-secondary bg-opacity-25 border-0 mb-3">
+                            <div class="card-body">
+                                <h6 class="text-white mb-3 fw-bold">
+                                    <i class="bi bi-person-circle me-2"></i>Người bán
+                                </h6>
+                                <div class="d-flex align-items-center">
+                                    <img src="${product.seller.avatar || '/assets/icons/icon-192.png'}" 
+                                         class="rounded-circle me-3" 
+                                         width="50" height="50"
+                                         onerror="this.onerror=null; this.src='/assets/icons/icon-192.png'">
+                                    <div>
+                                        <div class="text-white fw-bold">${product.seller.name}</div>
+                                        <small class="text-muted">${product.seller.email}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <!-- Shop Info -->
+                        ${product.shop ? `
+                        <div class="card bg-warning bg-opacity-10 border-warning">
+                            <div class="card-body">
+                                <h6 class="text-warning mb-3 fw-bold">
+                                    <i class="bi bi-shop me-2"></i>Cửa hàng
+                                </h6>
+                                <div class="d-flex align-items-center mb-2">
+                                    <img src="${product.shop.avatar || '/assets/icons/icon-192.png'}" 
+                                         class="rounded me-3 border border-2 border-warning" 
+                                         width="50" height="50"
+                                         onerror="this.onerror=null; this.src='/assets/icons/icon-192.png'">
+                                    <div>
+                                        <div class="text-white fw-bold">${product.shop.name}</div>
+                                        <small class="text-muted">${product.shop.phone}</small>
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-geo-alt-fill me-1"></i>${product.shop.address}
+                                </small>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Right Column: Product Details -->
+                    <div class="col-md-7">
+                        <!-- Product Name & Rating -->
+                        <h3 class="text-white mb-3 fw-bold">${product.name}</h3>
+                        <div class="mb-3">
+                            <span class="text-warning fs-5">
+                                ${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))}
+                            </span>
+                            <span class="text-muted ms-2">${product.rating.toFixed(1)} / 5.0</span>
+                        </div>
+
+                        <!-- Price Info -->
+                        <div class="card bg-primary bg-opacity-10 border-primary mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Giá gốc</small>
+                                        ${product.discountPercent > 0 ? `
+                                            <h5 class="text-muted text-decoration-line-through mb-0">
+                                                ${product.price.toLocaleString('vi-VN')}đ
+                                            </h5>
+                                        ` : `
+                                            <h5 class="text-white mb-0">
+                                                ${product.price.toLocaleString('vi-VN')}đ
+                                            </h5>
+                                        `}
+                                    </div>
+                                    ${product.discountPercent > 0 ? `
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Giá sau giảm</small>
+                                        <h4 class="text-success mb-0 fw-bold">
+                                            ${product.finalPrice.toLocaleString('vi-VN')}đ
+                                        </h4>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Statistics Cards -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-3 col-6">
+                                <div class="card bg-secondary bg-opacity-25 border-0">
+                                    <div class="card-body text-center py-2">
+                                        <i class="bi bi-box-seam text-info fs-4"></i>
+                                        <h5 class="mb-0 text-white mt-1">${product.stock}</h5>
+                                        <small class="text-muted">Tồn kho</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="card bg-secondary bg-opacity-25 border-0">
+                                    <div class="card-body text-center py-2">
+                                        <i class="bi bi-eye text-primary fs-4"></i>
+                                        <h5 class="mb-0 text-white mt-1">${product.views}</h5>
+                                        <small class="text-muted">Lượt xem</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="card bg-secondary bg-opacity-25 border-0">
+                                    <div class="card-body text-center py-2">
+                                        <i class="bi bi-cart-plus text-warning fs-4"></i>
+                                        <h5 class="mb-0 text-white mt-1">${product.addToCartCount}</h5>
+                                        <small class="text-muted">Thêm giỏ</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="card bg-secondary bg-opacity-25 border-0">
+                                    <div class="card-body text-center py-2">
+                                        <i class="bi bi-bag-check text-success fs-4"></i>
+                                        <h5 class="mb-0 text-white mt-1">${product.ordersCount}</h5>
+                                        <small class="text-muted">Đã bán</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Revenue Statistics -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <div class="card bg-success bg-opacity-10 border-success">
+                                    <div class="card-body text-center py-3">
+                                        <i class="bi bi-cash-coin fs-1 text-success mb-2"></i>
+                                        <h4 class="mb-1 text-white fw-bold">
+                                            ${product.stats.totalRevenue.toLocaleString('vi-VN')}đ
+                                        </h4>
+                                        <small class="text-muted">Doanh thu</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-info bg-opacity-10 border-info">
+                                    <div class="card-body text-center py-3">
+                                        <i class="bi bi-cart-check fs-1 text-info mb-2"></i>
+                                        <h4 class="mb-1 text-white fw-bold">${product.stats.totalOrders}</h4>
+                                        <small class="text-muted">Đơn hàng</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-warning bg-opacity-10 border-warning">
+                                    <div class="card-body text-center py-3">
+                                        <i class="bi bi-box2 fs-1 text-warning mb-2"></i>
+                                        <h4 class="mb-1 text-white fw-bold">${product.stats.totalQuantitySold}</h4>
+                                        <small class="text-muted">Đã bán</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="card bg-secondary bg-opacity-25 border-0 mb-3">
+                            <div class="card-body">
+                                <h6 class="text-white mb-3 fw-bold">
+                                    <i class="bi bi-file-text me-2"></i>Mô tả sản phẩm
+                                </h6>
+                                <p class="text-white mb-0">${product.description}</p>
+                            </div>
+                        </div>
+
+                        <!-- Additional Info -->
+                        <div class="card bg-secondary bg-opacity-25 border-0">
+                            <div class="card-body">
+                                <h6 class="text-white mb-3 fw-bold">
+                                    <i class="bi bi-info-circle-fill me-2"></i>Thông tin bổ sung
+                                </h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block">Thời gian chuẩn bị</small>
+                                        <span class="text-white">${product.prepTime} phút</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block">Ngày tạo</small>
+                                        <span class="text-white">${new Date(product.createdAt).toLocaleDateString('vi-VN', { 
+                                            year: 'numeric', month: 'long', day: 'numeric' 
+                                        })}</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block">Cập nhật gần nhất</small>
+                                        <span class="text-white">${new Date(product.updatedAt).toLocaleDateString('vi-VN', { 
+                                            year: 'numeric', month: 'long', day: 'numeric' 
+                                        })}</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block">ID sản phẩm</small>
+                                        <span class="text-white font-monospace">${product.id}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        } catch (error) {
+            console.error('❌ Error loading product detail:', error);
+
+            const loadingDiv = document.getElementById('productDetailLoading');
+            const errorDiv = document.getElementById('productDetailError');
+            const errorMsg = document.getElementById('productDetailErrorMessage');
+
+            loadingDiv.classList.add('d-none');
+            errorDiv.classList.remove('d-none');
+            errorMsg.textContent = error.message || 'Không thể tải thông tin sản phẩm. Vui lòng thử lại.';
+        }
+    }    
 
     populateCategoryFilter() {
         const categoryFilter = document.getElementById('category-filter');
@@ -560,6 +843,21 @@ export class ProductsManager {
             this.updateBulkActions();
             this.renderProductsList();
         });
+
+        // ========== VIEW PRODUCT DETAIL EVENT ==========
+        document.addEventListener('click', (e) => {
+            const viewBtn = e.target.closest('.view-product-detail-btn');
+            if (viewBtn) {
+                e.preventDefault();
+                const productId = viewBtn.dataset.productId;
+                console.log('👆 View button clicked, productId:', productId);
+                if (productId) {
+                    this.handleViewProduct(productId);
+                }
+            }
+        });
+
+        console.log('✅ Product detail event listener registered');        
     }
 
     updateBulkActions() {
