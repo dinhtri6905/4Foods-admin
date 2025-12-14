@@ -288,12 +288,8 @@ export class OrdersManager {
                 </td>
                 <td>
                     <div>
-                        <div class="fw-medium text-white">
-                            ${order.address?.name || order.user?.email || 'Khách vãng lai'}
-                        </div>
-                        <small class="text-muted">
-                            ${order.address?.phone || order.user?.phone || ''}
-                        </small>
+                        <div class="fw-medium text-white">${order.user?.name || order.address?.name || 'Khách vãng lai'}</div>
+                        <small class="text-muted">${order.user?.phone || order.address?.phone || 'Chưa cập nhật'}</small>
                     </div>
                 </td>
                 <td>
