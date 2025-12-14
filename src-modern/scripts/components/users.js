@@ -1,4 +1,6 @@
 // src-modern/scripts/components/users.js
+import { Modal } from 'bootstrap'; 
+
 import ApexCharts from 'apexcharts';
 import { UsersService } from '../utils/services/users.service.js';
 
@@ -22,7 +24,8 @@ export class UsersManager {
             loginMethod: ''
         };
         this.currentPage = 1;
-        
+        this.userDetailModal = null;
+
         // Assign to window immediately
         window.usersManager = this;
         
@@ -304,7 +307,7 @@ export class UsersManager {
                         </button>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-eye me-2"></i>View</a></li>
+                            <li><a class="dropdown-item view-user-detail-btn" href="#" data-user-id="${user._id}"><i class="bi bi-eye me-2"></i>View</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="#" onclick="window.usersManager.deleteUser('${user._id}'); return false;">
                                 <i class="bi bi-trash me-2"></i>Delete
@@ -365,6 +368,184 @@ export class UsersManager {
                     }
                 });
             });
+        }
+    }
+
+    // ========== VIEW USER DETAIL ==========
+    async handleViewUser(userId) {
+        console.log('🔍 Opening user detail for ID:', userId);
+
+        try {
+            // Khởi tạo modal (chỉ 1 lần)
+            if (!this.userDetailModal) {
+                const modalEl = document.getElementById('userDetailModal');
+                this.userDetailModal = new Modal(modalEl); 
+            }
+
+            // Reset về trạng thái loading
+            const loadingDiv = document.getElementById('userDetailLoading');
+            const errorDiv = document.getElementById('userDetailError');
+            const dataDiv = document.getElementById('userDetailData');
+
+            loadingDiv.classList.remove('d-none');
+            errorDiv.classList.add('d-none');
+            dataDiv.classList.add('d-none');
+            dataDiv.innerHTML = '';
+
+            // Hiển thị modal
+            this.userDetailModal.show();
+
+            // Gọi API
+            console.log('📡 Fetching user detail from API...');
+            const user = await UsersService.getUserDetail(userId);
+            console.log('✅ User data received:', user);
+
+            // Ẩn loading, hiện data
+            loadingDiv.classList.add('d-none');
+            dataDiv.classList.remove('d-none');
+
+            // Render nội dung
+            dataDiv.innerHTML = `
+                <!-- User Profile Header -->
+                <div class="row mb-4">
+                    <div class="col-md-3 text-center">
+                        <img src="${user.avatar || '/assets/icons/icon-192.png'}" 
+                             class="rounded-circle border border-3 border-primary mb-3" 
+                             width="120" height="120" 
+                             alt="${user.name}"
+                             onerror="this.onerror=null; this.src='/assets/icons/icon-192.png'">
+                        <div>
+                            <span class="badge ${user.role === 'Admin' ? 'bg-danger' : 'bg-primary'} px-3 py-2 fs-6">
+                                ${user.role}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <h4 class="text-white mb-2 fw-bold">${user.name}</h4>
+                        <p class="text-muted mb-3">
+                            <i class="bi bi-envelope-fill me-2"></i>${user.email}
+                        </p>
+                        <div class="d-flex gap-2 mb-3 flex-wrap">
+                            <span class="badge ${user.isSeller ? 'bg-warning text-dark' : 'bg-info'} px-3 py-2">
+                                <i class="bi bi-${user.isSeller ? 'shop' : 'person'} me-1"></i>
+                                ${user.accountType}
+                            </span>
+                            <span class="badge bg-secondary px-3 py-2">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>
+                                ${user.loginMethod}
+                            </span>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <small class="text-muted d-block mb-1">Số điện thoại</small>
+                                <span class="text-white fw-medium">${user.phone}</span>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block mb-1">Ngày sinh</small>
+                                <span class="text-white fw-medium">${user.dob ? new Date(user.dob).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="card bg-primary bg-opacity-10 border-primary">
+                            <div class="card-body text-center py-3">
+                                <i class="bi bi-cart3 fs-1 text-primary mb-2"></i>
+                                <h3 class="mb-1 text-white fw-bold">${user.stats.totalOrders}</h3>
+                                <small class="text-muted">Đơn hàng</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-success bg-opacity-10 border-success">
+                            <div class="card-body text-center py-3">
+                                <i class="bi bi-cash-coin fs-1 text-success mb-2"></i>
+                                <h3 class="mb-1 text-white fw-bold">${user.stats.totalSpent.toLocaleString('vi-VN')}đ</h3>
+                                <small class="text-muted">Tổng chi tiêu</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-warning bg-opacity-10 border-warning">
+                            <div class="card-body text-center py-3">
+                                <i class="bi bi-coin fs-1 text-warning mb-2"></i>
+                                <h3 class="mb-1 text-white fw-bold">${user.coin.toLocaleString('vi-VN')}</h3>
+                                <small class="text-muted">Xu tích lũy</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Info -->
+                <div class="card bg-secondary bg-opacity-25 border-0 mb-3">
+                    <div class="card-body">
+                        <h6 class="text-white mb-3 fw-bold">
+                            <i class="bi bi-info-circle-fill me-2"></i>Thông tin bổ sung
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <small class="text-muted d-block mb-1">Ngày tham gia</small>
+                                <span class="text-white">${new Date(user.createdAt).toLocaleDateString('vi-VN', { 
+                                    year: 'numeric', month: 'long', day: 'numeric' 
+                                })}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block mb-1">Hoạt động gần nhất</small>
+                                <span class="text-white">${new Date(user.lastActive).toLocaleDateString('vi-VN', { 
+                                    year: 'numeric', month: 'long', day: 'numeric' 
+                                })}</span>
+                            </div>
+                            <div class="col-12">
+                                <small class="text-muted d-block mb-1">CMND/CCCD</small>
+                                <span class="text-white">${user.idCardNumber || 'Chưa cập nhật'}</span>
+                            </div>
+                            <div class="col-12">
+                                <small class="text-muted d-block mb-1">Địa chỉ thường trú</small>
+                                <span class="text-white">${user.permanentAddress || 'Chưa cập nhật'}</span>
+                            </div>
+                            <div class="col-12">
+                                <small class="text-muted d-block mb-1">Số địa chỉ giao hàng</small>
+                                <span class="text-white">${user.stats.addressCount} địa chỉ</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                ${user.isSeller && user.shop ? `
+                <!-- Shop Info -->
+                <div class="card bg-warning bg-opacity-10 border-warning">
+                    <div class="card-body">
+                        <h6 class="text-warning mb-3 fw-bold">
+                            <i class="bi bi-shop me-2"></i>Thông tin cửa hàng
+                        </h6>
+                        <div class="d-flex align-items-center">
+                            <img src="${user.shop.avatar || '/assets/icons/icon-192.png'}" 
+                                 class="rounded me-3 border border-2 border-warning" 
+                                 width="60" height="60" 
+                                 onerror="this.onerror=null; this.src='/assets/icons/icon-192.png'">
+                            <div>
+                                <div class="text-white fw-bold fs-5">${user.shop.name}</div>
+                                <small class="text-muted">ID: ${user.shop._id}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+
+        } catch (error) {
+            console.error('❌ Error loading user detail:', error);
+
+            const loadingDiv = document.getElementById('userDetailLoading');
+            const errorDiv = document.getElementById('userDetailError');
+            const errorMsg = document.getElementById('userDetailErrorMessage');
+
+            loadingDiv.classList.add('d-none');
+            errorDiv.classList.remove('d-none');
+            errorMsg.textContent = error.message || 'Không thể tải thông tin người dùng. Vui lòng thử lại.';
         }
     }
 
@@ -459,6 +640,21 @@ export class UsersManager {
             this.updateBulkActions();
             this.renderUsersDirectory();
         });
+
+        // ========== VIEW USER DETAIL EVENT ==========
+        document.addEventListener('click', (e) => {
+            const viewBtn = e.target.closest('.view-user-detail-btn');
+            if (viewBtn) {
+                e.preventDefault();
+                const userId = viewBtn.dataset.userId;
+                console.log('👆 View button clicked, userId:', userId);
+                if (userId) {
+                    this.handleViewUser(userId);
+                }
+            }
+        });
+
+        console.log('✅ User detail event listener registered');
     }
 
     updateBulkActions() {

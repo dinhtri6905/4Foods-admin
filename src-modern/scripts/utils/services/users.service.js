@@ -21,5 +21,9 @@ export const UsersService = {
 
     async bulkAction(action, userIds) {
         return await apiClient.post(ENDPOINTS.USERS.BULK_ACTION, { action, userIds });
+    },
+
+    async getUserDetail(id) {
+        return await apiClient.get(`/users/${id}`);
     }
 };
