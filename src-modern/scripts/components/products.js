@@ -3,6 +3,7 @@ import { Modal } from 'bootstrap';
 
 import ApexCharts from 'apexcharts';
 import { ProductsService } from '../utils/services/products.service.js';
+import { getCategoryName, getCategoryColor } from '../utils/constants.js';
 
 export class ProductsManager {
     constructor() {
@@ -129,24 +130,16 @@ export class ProductsManager {
     async loadCategories() {
         try {
             console.log('🔄 [products.js] Loading categories...');
-            
-            // Bước 1: Gọi API
             const response = await ProductsService.getCategories();
-            
-            // Bước 2: Debug response
             console.log('📡 [products.js] Response from ProductsService:', response);
             console.log('📡 [products.js] Response type:', typeof response);
             console.log('📡 [products.js] Is Array?', Array.isArray(response));
-            
-            // Bước 3: Xử lý response
+
             if (Array.isArray(response)) {
-                // Trường hợp 1: Response trực tiếp là array
                 console.log('✅ [products.js] Response is direct array');
                 this.data.categories = response;
             } else if (response && typeof response === 'object') {
-                // Trường hợp 2: Response là object, cần lấy array bên trong
                 console.log('📦 [products.js] Response is object, checking fields...');
-                
                 if (Array.isArray(response.data)) {
                     console.log('✅ [products.js] Found array in response.data');
                     this.data.categories = response.data;
@@ -165,17 +158,53 @@ export class ProductsManager {
                 console.warn('⚠️ [products.js] Unknown response format');
                 this.data.categories = [];
             }
-            
-            // Bước 4: Log kết quả cuối cùng
+
+            // ✅ THÊM: Gộp các category trùng lặp
+            if (this.data.categories.length > 0) {
+                const mergedCategories = {};
+
+                this.data.categories.forEach(cat => {
+                    const categoryId = cat.category || cat._id;
+                    const displayName = getCategoryName(categoryId);
+
+                    // Nếu đã tồn tại category này, cộng dồn dữ liệu
+                    if (mergedCategories[displayName]) {
+                        mergedCategories[displayName].count += cat.count || 0;
+                        mergedCategories[displayName].totalValue += cat.totalValue || 0;
+                        
+                        // Gộp products nếu có
+                        if (cat.products && Array.isArray(cat.products)) {
+                            mergedCategories[displayName].products = [
+                                ...mergedCategories[displayName].products,
+                                ...cat.products
+                            ];
+                        }
+                    } else {
+                        // Tạo mới
+                        mergedCategories[displayName] = {
+                            category: displayName,
+                            _id: categoryId, // Giữ ID gốc để filter
+                            count: cat.count || 0,
+                            totalValue: cat.totalValue || 0,
+                            products: cat.products || []
+                        };
+                    }
+                });
+
+                // Chuyển object thành array và sắp xếp
+                this.data.categories = Object.values(mergedCategories)
+                    .sort((a, b) => b.totalValue - a.totalValue); // Sắp xếp theo doanh thu giảm dần
+
+                console.log('✅ [products.js] Categories after merging:', this.data.categories);
+            }
+
             console.log('✅ [products.js] Final this.data.categories:', this.data.categories);
             console.log('✅ [products.js] Categories count:', this.data.categories.length);
-            
             if (this.data.categories.length > 0) {
                 console.log('✅ [products.js] First category sample:', this.data.categories[0]);
             } else {
                 console.warn('⚠️ [products.js] No categories data after processing');
             }
-            
         } catch (error) {
             console.error('❌ [products.js] Error loading categories:', error);
             console.error('❌ [products.js] Error stack:', error.stack);
@@ -187,20 +216,53 @@ export class ProductsManager {
         try {
             console.log('🔄 [products.js] Loading category distribution...');
             const response = await ProductsService.getCategoryDistribution();
-            
             console.log('📡 [products.js] Distribution response:', response);
+
+            let rawData = [];
             
+            // Xử lý response format
             if (Array.isArray(response)) {
-                this.data.categoryDistribution = response;
+                rawData = response;
             } else if (response && Array.isArray(response.data)) {
-                this.data.categoryDistribution = response.data;
+                rawData = response.data;
             } else if (response && Array.isArray(response.distribution)) {
-                this.data.categoryDistribution = response.distribution;
+                rawData = response.distribution;
             } else {
                 console.warn('⚠️ Unknown distribution format');
                 this.data.categoryDistribution = [];
+                return;
             }
-            
+
+            // ✅ THÊM: Gộp các category trùng lặp
+            if (rawData.length > 0) {
+                const mergedDistribution = {};
+
+                rawData.forEach(item => {
+                    const categoryId = item.category || item._id;
+                    const displayName = getCategoryName(categoryId);
+
+                    // Nếu đã tồn tại, cộng dồn
+                    if (mergedDistribution[displayName]) {
+                        mergedDistribution[displayName].count += item.count || 0;
+                    } else {
+                        // Tạo mới
+                        mergedDistribution[displayName] = {
+                            category: displayName,
+                            _id: categoryId, // Giữ ID gốc
+                            count: item.count || 0
+                        };
+                    }
+                });
+
+                // Chuyển object thành array và sắp xếp
+                this.data.categoryDistribution = Object.values(mergedDistribution)
+                    .sort((a, b) => b.count - a.count); // Sắp xếp giảm dần
+
+                console.log('✅ [products.js] Distribution after merging:', this.data.categoryDistribution);
+            } else {
+                this.data.categoryDistribution = [];
+            }
+
             console.log('✅ [products.js] Final distribution data:', this.data.categoryDistribution);
         } catch (error) {
             console.error('❌ Error loading category distribution:', error);
@@ -245,18 +307,15 @@ export class ProductsManager {
             return;
         }
 
-        // Destroy chart cũ nếu có
         if (this.charts.categorySales) {
             this.charts.categorySales.destroy();
         }
 
         const { series, labels } = this.data.categorySalesTimeline;
-        
         console.log('🎨 Rendering category sales chart');
         console.log('📊 Series:', series);
         console.log('📊 Labels:', labels);
 
-        // Kiểm tra dữ liệu
         if (!series || series.length === 0) {
             console.warn('⚠️ No series data for chart');
             chartEl.innerHTML = `
@@ -269,84 +328,69 @@ export class ProductsManager {
             return;
         }
 
-        // Cấu hình chart
         const options = {
-            series: series,
+            series: series.map(s => ({
+                name: getCategoryName(s.name), // ✅ Map sang tên đẹp
+                data: s.data
+            })),
             chart: {
-                type: 'line',
+                type: 'area',
                 height: 320,
                 background: 'transparent',
-                toolbar: {
-                    show: true,
-                    tools: {
-                        download: true,
-                        selection: false,
-                        zoom: false,
-                        zoomin: false,
-                        zoomout: false,
-                        pan: false,
-                        reset: false
-                    }
-                },
-                animations: {
-                    enabled: true,
-                    easing: 'easeinout',
-                    speed: 800
+                toolbar: { show: false },
+                zoom: { enabled: false }
+            },
+            dataLabels: { enabled: false },
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.7,
+                    opacityTo: 0.3,
+                    stops: [0, 90, 100]
                 }
             },
-            stroke: {
-                width: 3,
-                curve: 'smooth'
-            },
+            colors: series.map(s => getCategoryColor(getCategoryName(s.name))), // ✅ Màu động
             xaxis: {
                 categories: labels,
-                labels: {
-                    style: {
-                        colors: '#9ca3af',
-                        fontSize: '12px'
-                    }
-                }
+                labels: { style: { colors: '#9ca3af' } }
             },
             yaxis: {
                 labels: {
-                    style: {
-                        colors: '#9ca3af',
-                        fontSize: '12px'
-                    },
+                    style: { colors: '#9ca3af' },
                     formatter: function(value) {
-                        return value ? value.toLocaleString('vi-VN') + 'đ' : '0đ';
+                        return value.toLocaleString('vi-VN') + 'đ';
                     }
                 }
-            },
-            dataLabels: {
-                enabled: false
             },
             legend: {
                 show: true,
                 position: 'top',
                 horizontalAlign: 'left',
-                labels: {
-                    colors: '#646060ff'
+                labels: { colors: '#fff' }
+            },
+            tooltip: {
+                theme: 'dark',
+                shared: true,
+                intersect: false,
+                y: {
+                    formatter: function(value) {
+                        return value.toLocaleString('vi-VN') + 'đ';
+                    }
                 }
             },
             grid: {
                 borderColor: '#374151',
-                strokeDashArray: 4
-            },
-            tooltip: {
-                theme: 'dark',
-                y: {
-                    formatter: function(value) {
-                        return value ? value.toLocaleString('vi-VN') + 'đ' : '0đ';
-                    }
-                }
-            },
-            colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+                strokeDashArray: 3
+            }
         };
 
         this.charts.categorySales = new ApexCharts(chartEl, options);
         this.charts.categorySales.render();
-        
         console.log('✅ Category sales chart rendered');
     }
 
@@ -478,7 +522,7 @@ export class ProductsManager {
                                 aria-controls="collapse-${index}">
                             <div class="d-flex align-items-center">
                                 <i class="bi bi-tag-fill me-2 text-primary"></i>
-                                <strong>${cat.category}</strong>
+                                <strong>${getCategoryName(cat.category)}</strong>
                             </div>
                             <div class="d-flex align-items-center">
                                 <span class="badge bg-primary me-2">${cat.count} SP</span>
@@ -603,7 +647,7 @@ export class ProductsManager {
         }
 
         // Chuẩn bị dữ liệu cho chart
-        const labels = this.data.categoryDistribution.map(item => item.category || item._id);
+        const labels = this.data.categoryDistribution.map(item => getCategoryName(item.category || item._id));
         const series = this.data.categoryDistribution.map(item => item.count || 0);
 
         console.log('📊 Chart labels:', labels);
@@ -617,7 +661,7 @@ export class ProductsManager {
                 background: 'transparent'
             },
             labels: labels,
-            colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'],
+            colors: labels.map(label => getCategoryColor(label)),
             legend: {
                 show: true,
                 position: 'bottom',

@@ -1,6 +1,7 @@
 // src-modern/scripts/components/analytics.js
 import ApexCharts from 'apexcharts';
 import { AnalyticsService } from '../utils/services/analytics.service.js';
+import { getCategoryName, getCategoryColor } from '../utils/constants.js';
 
 export class AnalyticsManager {
     constructor() {
@@ -35,10 +36,40 @@ export class AnalyticsManager {
     async loadSummaryData() {
         try {
             const summary = await AnalyticsService.getSummary();
+            
+            // ✅ Gộp các category cùng tên
+            if (summary.topCategories && Array.isArray(summary.topCategories)) {
+                const mergedCategories = {};
+                
+                summary.topCategories.forEach(cat => {
+                    if (!cat.id && !cat._id) return;
+                    
+                    // Lấy tên hiển thị
+                    const displayName = this.getCategoryDisplayName(cat.id || cat._id);
+                    
+                    // Gộp doanh thu nếu trùng tên
+                    if (mergedCategories[displayName]) {
+                        mergedCategories[displayName].revenue += cat.revenue || 0;
+                    } else {
+                        mergedCategories[displayName] = {
+                            name: displayName,
+                            revenue: cat.revenue || 0
+                        };
+                    }
+                });
+                
+                // Chuyển thành array và sắp xếp theo doanh thu
+                summary.topCategories = Object.values(mergedCategories)
+                    .sort((a, b) => b.revenue - a.revenue)
+                    .slice(0, 7);
+                
+                console.log('✅ Merged topCategories:', summary.topCategories);
+            }
+            
             this.data = { ...this.data, ...summary };
             console.log('📊 Summary Data:', this.data);
-        } catch (error) { 
-            console.error('Error loading summary:', error); 
+        } catch (error) {
+            console.error('Error loading summary:', error);
         }
     }
 
@@ -183,7 +214,7 @@ export class AnalyticsManager {
         tbody.innerHTML = this.data.recentOrders.map(order => `
             <tr>
                 <td class="ps-4">
-                    <span class="fw-bold font-monospace text-primary">#${order._id.slice(-6).toUpperCase()}</span>
+                    <span class="fw-bold font-monospace text-primary">#${(order.id || order._id || '').slice(-6).toUpperCase()}</span>
                 </td>
                 <td>
                     <div class="d-flex align-items-center">
@@ -235,29 +266,59 @@ export class AnalyticsManager {
             return;
         }
 
-        list.innerHTML = this.data.topCategories.map(cat => `
-            <div class="list-group-item d-flex justify-content-between align-items-center p-3 border-bottom-0">
-                <div class="d-flex align-items-center">
-                    <div class="icon-square bg-primary bg-opacity-10 text-primary rounded-2 p-2 me-3">
-                        <i class="bi bi-tag-fill"></i>
+        list.innerHTML = this.data.topCategories.map((cat, index) => {
+            // 🎨 Màu sắc cho từng category (7 màu khác nhau)
+            const colors = [
+                { bg: 'bg-danger bg-opacity-10', text: 'text-danger', icon: 'bi-fire' },
+                { bg: 'bg-warning bg-opacity-10', text: 'text-warning', icon: 'bi-star-fill' },
+                { bg: 'bg-success bg-opacity-10', text: 'text-success', icon: 'bi-cup-hot' },
+                { bg: 'bg-info bg-opacity-10', text: 'text-info', icon: 'bi-egg-fried' },
+                { bg: 'bg-primary bg-opacity-10', text: 'text-primary', icon: 'bi-cake2' },
+                { bg: 'bg-purple bg-opacity-10', text: 'text-purple', icon: 'bi-droplet-fill' },
+                { bg: 'bg-secondary bg-opacity-10', text: 'text-secondary', icon: 'bi-gift' }
+            ];
+            const color = colors[index % colors.length];
+            
+            return `
+                <div class="list-group-item d-flex justify-content-between align-items-center p-3 border-bottom-0">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-square ${color.bg} ${color.text} rounded-2 p-2 me-3">
+                            <i class="bi ${color.icon}"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold ${color.text}">${cat.name || cat.id || cat._id || 'Chưa rõ'}</div>
+                            <small class="text-muted">Danh mục sản phẩm</small>
+                        </div>
                     </div>
-                    <div>
-                        <div class="fw-bold text-dark">${cat._id}</div>
-                        <small class="text-muted">Danh mục sản phẩm</small>
+                    <div class="text-end">
+                        <div class="h6 fw-bold mb-0 ${color.text}">${this.formatCurrency(cat.revenue)}</div>
+                        <small class="text-success fw-medium">
+                            ${((cat.revenue / this.data.totalRevenue) * 100).toFixed(1)}% đóng góp
+                        </small>
                     </div>
                 </div>
-                <div class="text-end">
-                    <div class="h6 fw-bold mb-0 text-primary">${this.formatCurrency(cat.revenue)}</div>
-                    <small class="text-success fw-medium">
-                        ${((cat.revenue / this.data.totalRevenue) * 100).toFixed(1)}% đóng góp
-                    </small>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
+    getCategoryDisplayName(categoryId) {
+        if (!categoryId) return 'Chưa phân loại';
+        
+        const categoryMap = {
+            '691054a4ad02ab999d92ae84': 'Món hot',
+            '671acb0298f2c700f9e2c5a9': 'Bún, phở, mì',
+            '690fa786aa5dcb293103a609': 'Món chính',
+            '691052e7ad02ab999d92ae66': 'Khai vị',
+            '6910561b8ad02ab999d92ae33': 'Tráng miệng',
+            '691051568ad02ab999d92ae48': 'Đồ uống',
+            '69104ed7ad02ab999d92ae27': 'Combo tiết kiệm'
+        };
+        
+        return categoryMap[categoryId] || `Danh mục #${categoryId.slice(-6).toUpperCase()}`;
+    }   
+
     // Utilities
-    getStatusBadge(status) {
+    getStatusBadge(status) {    
         const badges = {
             'delivered': 'bg-success',
             'processing': 'bg-warning text-dark',
