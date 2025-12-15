@@ -79,22 +79,39 @@ export class UsersManager {
     }
 
     async loadRecentActivities() {
-        try {
-            console.log('📊 Loading recent activities...');
-            this.data.recentActivities = await UsersService.getRecentActivities(20);
-            
-            // Kiểm tra nếu API trả về dữ liệu hợp lệ
-            if (!Array.isArray(this.data.recentActivities)) {
-                console.warn('⚠️ API returned invalid data format');
-                this.data.recentActivities = [];
+        const maxRetries = 3;
+        let attempt = 0;
+        
+        while (attempt < maxRetries) {
+            try {
+                attempt++;
+                console.log(`📊 Loading recent activities... (Attempt ${attempt}/${maxRetries})`);
+                
+                const response = await UsersService.getRecentActivities(20);
+                
+                // Validate response
+                if (Array.isArray(response)) {
+                    this.data.recentActivities = response;
+                    console.log('✅ Loaded activities:', this.data.recentActivities.length);
+                    return; // Success - exit retry loop
+                } else {
+                    console.warn(`⚠️ Invalid response format (attempt ${attempt}):`, response);
+                    this.data.recentActivities = [];
+                }
+                
+            } catch (error) {
+                console.error(`❌ Error loading activities (attempt ${attempt}):`, error);
+                
+                if (attempt === maxRetries) {
+                    console.error('💥 All retry attempts failed');
+                    this.data.recentActivities = [];
+                } else {
+                    // Wait before retry (exponential backoff)
+                    const waitTime = Math.pow(2, attempt) * 500; // 1s, 2s, 4s
+                    console.log(`⏳ Waiting ${waitTime}ms before retry...`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                }
             }
-            
-            console.log('✅ Loaded activities:', this.data.recentActivities.length);
-        } catch (error) {
-            console.error('❌ Error loading activities:', error);
-            console.error('API Endpoint:', error.config?.url || 'Unknown');
-            console.error('Status:', error.response?.status || 'Network Error');
-            this.data.recentActivities = [];
         }
     }
 
@@ -209,46 +226,149 @@ export class UsersManager {
 
     renderRecentActivities() {
         const container = document.getElementById('recent-activities-list');
-        
+        console.log('🎨 Rendering recent activities, container found:', !!container);
+        console.log('📦 Recent activities data:', this.data.recentActivities);
+
         if (!container) {
-            console.warn('⚠️ Container #recent-activities-list not found');
+            console.error('❌ Container #recent-activities-list not found!');
             return;
         }
 
-        console.log('🎨 Rendering activities:', this.data.recentActivities?.length || 0);
-
-        if (!Array.isArray(this.data.recentActivities) || this.data.recentActivities.length === 0) {
+        if (!this.data.recentActivities || this.data.recentActivities.length === 0) {
+            console.warn('⚠️ No recent activities to render');
             container.innerHTML = `
                 <div class="text-center text-muted py-5">
-                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                    <i class="bi bi-clock-history fs-1 d-block mb-3"></i>
                     <p class="mb-0">Chưa có hoạt động nào</p>
+                    <small class="text-secondary">Hoạt động người dùng sẽ hiển thị tại đây</small>
                 </div>
             `;
             return;
         }
 
-        container.innerHTML = this.data.recentActivities.map(activity => `
-            <div class="activity-item d-flex align-items-start p-3 border-bottom border-secondary">
-                <div class="activity-icon me-3">
-                    <div class="icon-circle bg-${activity.iconColor || 'primary'} bg-opacity-10 text-${activity.iconColor || 'primary'} rounded-circle d-flex align-items-center justify-content-center" 
-                         style="width: 40px; height: 40px;">
-                        <i class="bi bi-${activity.icon || 'circle-fill'}"></i>
-                    </div>
-                </div>
-                <div class="flex-grow-1">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <span class="fw-bold text-white">${activity.user || 'Unknown'}</span>
-                            <span class="text-secondary ms-1">${activity.action || 'thực hiện hành động'}</span>
-                        </div>
-                        <small class="text-muted">${this.formatTime(activity.time)}</small>
-                    </div>
-                    <small class="text-muted d-block mt-1">${activity.details || ''}</small>
-                </div>
-            </div>
-        `).join('');
+        console.log('✅ Rendering', this.data.recentActivities.length, 'recent activities');
 
-        console.log('✅ Activities rendered successfully');
+        container.innerHTML = this.data.recentActivities.map((activity, index) => {
+            // Xử lý avatar URL
+            let avatarUrl = '/assets/icons/icon-192.png';
+            if (activity.user?.avatar) {
+                const rawUrl = activity.user.avatar;
+                if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+                    avatarUrl = rawUrl;
+                } else if (rawUrl.startsWith('/assets')) {
+                    avatarUrl = rawUrl;
+                } else {
+                    const cleanPath = rawUrl.startsWith('/') ? rawUrl.substring(1) : rawUrl;
+                    avatarUrl = `https://admin.4foods.app/${cleanPath}`;
+                }
+            }
+
+            // Xác định icon và màu dựa trên loại activity
+            const activityConfig = {
+                'login': { icon: 'bi-box-arrow-in-right', color: 'text-success', label: 'Đăng nhập' },
+                'logout': { icon: 'bi-box-arrow-right', color: 'text-secondary', label: 'Đăng xuất' },
+                'register': { icon: 'bi-person-plus', color: 'text-primary', label: 'Đăng ký' },
+                'update_profile': { icon: 'bi-person-gear', color: 'text-info', label: 'Cập nhật' },
+                'create_product': { icon: 'bi-plus-circle', color: 'text-success', label: 'Tạo SP' },
+                'create_order': { icon: 'bi-cart-plus', color: 'text-warning', label: 'Đặt hàng' },
+                'update_order': { icon: 'bi-pencil-square', color: 'text-info', label: 'Cập nhật' },
+                'delete': { icon: 'bi-trash', color: 'text-danger', label: 'Xóa' },
+                'default': { icon: 'bi-activity', color: 'text-muted', label: 'Hoạt động' }
+            };
+
+            const config = activityConfig[activity.action] || activityConfig['default'];
+
+            // Format thời gian
+            const timeAgo = this.getTimeAgo(activity.timestamp || activity.createdAt);
+
+            // Xác định badge role
+            const roleBadge = activity.user?.role === 'seller' 
+                ? '<span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">Seller</span>'
+                : activity.user?.role === 'admin'
+                ? '<span class="badge bg-danger ms-2" style="font-size: 0.65rem;">Admin</span>'
+                : '';
+
+            return `
+                <div class="d-flex align-items-start p-3 bg-dark bg-opacity-50 rounded mb-2 position-relative hover-card">
+                    <!-- Avatar -->
+                    <img src="${avatarUrl}" 
+                        class="rounded-circle me-3" 
+                        width="50" 
+                        height="50" 
+                        style="object-fit: cover;"
+                        alt="${activity.user?.name || 'User'}"
+                        onerror="this.onerror=null; this.src='/assets/icons/icon-192.png'">
+                    
+                    <!-- Content -->
+                    <div class="flex-grow-1">
+                        <!-- User Name & Role -->
+                        <div class="d-flex align-items-center mb-1">
+                            <span class="fw-medium text-white">${activity.user?.name || 'Unknown User'}</span>
+                            ${roleBadge}
+                        </div>
+                        
+                        <!-- Email -->
+                        <small class="text-muted d-block mb-2">
+                            <i class="bi bi-envelope me-1"></i>${activity.user?.email || 'N/A'}
+                        </small>
+                        
+                        <!-- Action -->
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi ${config.icon} ${config.color} fs-5"></i>
+                            <span class="text-white small">${config.label}</span>
+                            ${activity.description ? `
+                                <span class="text-muted small">- ${activity.description}</span>
+                            ` : ''}
+                        </div>
+                        
+                        <!-- Details & Time -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex gap-3">
+                                ${activity.ipAddress ? `
+                                    <small class="text-secondary">
+                                        <i class="bi bi-router me-1"></i>${activity.ipAddress}
+                                    </small>
+                                ` : ''}
+                                ${activity.device ? `
+                                    <small class="text-secondary">
+                                        <i class="bi bi-phone me-1"></i>${activity.device}
+                                    </small>
+                                ` : ''}
+                            </div>
+                            <small class="text-muted">
+                                <i class="bi bi-clock me-1"></i>${timeAgo}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        console.log('✅ Recent activities rendered successfully');
+    }
+
+    // Helper function: Tính thời gian trôi qua
+    getTimeAgo(timestamp) {
+        if (!timestamp) return 'Không rõ';
+        
+        const now = new Date();
+        const past = new Date(timestamp);
+        const diffMs = now - past;
+        const diffSec = Math.floor(diffMs / 1000);
+        const diffMin = Math.floor(diffSec / 60);
+        const diffHour = Math.floor(diffMin / 60);
+        const diffDay = Math.floor(diffHour / 24);
+
+        if (diffSec < 60) return 'Vừa xong';
+        if (diffMin < 60) return `${diffMin} phút trước`;
+        if (diffHour < 24) return `${diffHour} giờ trước`;
+        if (diffDay < 7) return `${diffDay} ngày trước`;
+        
+        return past.toLocaleDateString('vi-VN', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric' 
+        });
     }
 
     renderUsersDirectory() {
