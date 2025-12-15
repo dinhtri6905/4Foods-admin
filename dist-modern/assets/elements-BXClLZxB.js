@@ -1,4 +1,4 @@
-import{m as a}from"./main-DjPgJPFM.js";import"./auth.service-Z7GyztH_.js";const i=[{id:"buttons",title:"Buttons",category:"components",icon:"bi bi-square",description:"Bootstrap button styles, sizes, and states",examples:12,url:"/elements-buttons.html",preview:`
+import{m as a}from"./main-BSvvBihu.js";import"./auth.service-Z7GyztH_.js";const i=[{id:"buttons",title:"Buttons",category:"components",icon:"bi bi-square",description:"Bootstrap button styles, sizes, and states",examples:12,url:"/elements-buttons.html",preview:`
             <div class="d-flex gap-2 flex-wrap">
                 <button class="btn btn-primary btn-sm">Primary</button>
                 <button class="btn btn-outline-secondary btn-sm">Secondary</button>

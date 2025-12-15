@@ -337,19 +337,45 @@ export class OrdersManager {
     }
 
     renderOrderItems(items) {
-        if (!items || items.length === 0) return '<span class="text-muted">-</span>';
+        if (!items || items.length === 0) {
+            return '<span class="text-muted">-</span>';
+        }
         
         const firstItem = items[0];
         const remaining = items.length - 1;
         
+        // ✅ Helper: Xử lý URL ảnh
+        let imageUrl = '/assets/icons/icon-192.png';
+        
+        if (firstItem.product && firstItem.product.imageUrl) {
+            const rawUrl = firstItem.product.imageUrl;
+            
+            // Nếu là URL tuyệt đối (http/https) → Dùng ngay
+            if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+                imageUrl = rawUrl;
+            } 
+            // Nếu là local asset (/assets/...) → Giữ nguyên
+            else if (rawUrl.startsWith('/assets')) {
+                imageUrl = rawUrl;
+            }
+            // Nếu là relative path → Thêm base URL
+            else {
+                const cleanPath = rawUrl.startsWith('/') ? rawUrl.substring(1) : rawUrl;
+                imageUrl = `https://admin.4foods.app/${cleanPath}`;
+            }
+        }
+        
         return `
             <div class="d-flex align-items-center">
-                <img src="${firstItem.product?.images?.[0] || '/assets/icons/icon-192.png'}" 
-                     class="rounded me-2" 
-                     width="30" height="30" 
-                     style="object-fit: cover;"
-                     alt="${firstItem.name}"
-                     onerror="this.onerror=null; this.src='assets/icons/icon-192.png'"
+                <img 
+                    src="${imageUrl}" 
+                    class="rounded me-2" 
+                    width="30" 
+                    height="30" 
+                    style="object-fit: cover" 
+                    alt="${firstItem.name || 'Product'}"
+                    onerror="this.onerror=null; this.src='/assets/icons/icon-192.png'"
+                >
                 <div>
                     <div class="small text-white">${firstItem.name}</div>
                     ${remaining > 0 ? `<small class="text-muted">+${remaining} sản phẩm khác</small>` : ''}
@@ -598,18 +624,41 @@ export class OrdersManager {
                                     <i class="bi bi-cart-fill me-2"></i>Sản phẩm (${order.items.length})
                                 </h6>
                                 <div class="list-group list-group-flush bg-transparent">
-                                    ${order.items.map(item => `
+                                    ${order.items.map(item => {
+                                        // Helper function inline
+                                        const getImageUrl = (imageData) => {
+                                            if (!imageData) return '/assets/icons/icon-192.png';
+                                            const imagePath = Array.isArray(imageData) ? imageData[0] : imageData;
+                                            if (!imagePath) return '/assets/icons/icon-192.png';
+                                            if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+                                                return imagePath;
+                                            }
+                                            const cleanPath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
+                                            return `https://admin.4foods.app/${cleanPath}`;
+                                        };
+                                        
+                                        return `
                                         <div class="list-group-item bg-dark bg-opacity-50 border-secondary mb-2 rounded">
                                             <div class="d-flex align-items-center">
-                                                <img src="${item.product?.imageUrl || item.product?.images?.[0] || '/assets/icons/icon-192.png'}" 
-                                                     class="rounded me-3" 
-                                                     width="60" height="60"
-                                                     onerror="this.onerror=null; this.src='/assets/icons/icon-192.png'">
+                                            <img src="${(() => {
+                                                const product = item.product;
+                                                if (!product || !product.imageUrl) return '/assets/icons/icon-192.png';
+                                                const url = product.imageUrl;
+                                                if (url.startsWith('http://') || url.startsWith('https://')) return url;
+                                                if (url.startsWith('/assets')) return url;
+                                                return 'https://admin.4foods.app/' + (url.startsWith('/') ? url.substring(1) : url);
+                                            })()}" 
+                                                class="rounded me-3" 
+                                                width="60" 
+                                                height="60"
+                                                style="object-fit: cover"
+                                                onerror="this.onerror=null; this.src='/assets/icons/icon-192.png'"
+                                                alt="${item.name || 'Product'}">
                                                 <div class="flex-grow-1">
                                                     <div class="text-white fw-bold mb-1">${item.name}</div>
                                                     <div class="text-muted small">
                                                         Số lượng: <span class="text-white">${item.quantity}</span> x 
-                                                        <span class="text-white">${item.price.toLocaleString('vi-VN')}đ</span>
+                                                        <span class="text-white">${item.price.toLocaleString('vi-VN')}₫</span>
                                                     </div>
                                                     ${item.shopId?.name ? `
                                                         <div class="text-muted small">
@@ -619,12 +668,13 @@ export class OrdersManager {
                                                 </div>
                                                 <div class="text-end">
                                                     <div class="text-success fw-bold">
-                                                        ${(item.price * item.quantity).toLocaleString('vi-VN')}đ
+                                                        ${(item.price * item.quantity).toLocaleString('vi-VN')}₫
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    `).join('')}
+                                        `;
+                                    }).join('')}
                                 </div>
                             </div>
                         </div>
