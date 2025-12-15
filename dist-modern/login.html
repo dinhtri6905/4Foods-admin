@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập Admin - 4Foods</title>
+    
+    <link rel="icon" type="image/png" href="./assets/favicon-CIKpfr-F.png">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f1116 0%, #1a1d21 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            padding: 1rem;
+            color: #fff;
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 440px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .login-card {
+            background: rgba(33, 37, 41, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            padding: 3rem 2.5rem;
+        }
+        
+        .brand-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .brand-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 20px rgba(13, 110, 253, 0.3);
+        }
+        
+        .brand-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.25rem;
+        }
+        
+        .brand-subtitle {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            color: #6c757d;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(22, 25, 28, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            height: 50px;
+            border-radius: 12px;
+            padding: 0 1rem;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            background: rgba(22, 25, 28, 0.95);
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+        }
+
+        input::placeholder {
+            color: #6c757d;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6c757d;
+            font-size: 1.2rem;
+            transition: color 0.3s;
+            user-select: none;
+        }
+        
+        .password-toggle:hover {
+            color: #fff;
+        }
+        
+        .btn-login {
+            width: 100%;
+            height: 52px;
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 0.5rem;
+        }
+        
+        .btn-login:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .alert {
+            background: rgba(220, 53, 69, 0.15);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            margin-bottom: 1.25rem;
+            color: #dc3545;
+            font-size: 0.875rem;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        .alert.d-none {
+            display: none;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .footer-text {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+  <script type="module" crossorigin src="./assets/login-CwyR3pT2.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/auth.service-Z7GyztH_.js">
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Brand -->
+            <div class="brand-section">
+                <img src="./assets/logo-_bzzc8PV.svg" alt="Logo" height="32" class="d-inline-block align-text-top me-2">
+                <h1 class="brand-title">4Foods Admin</h1>
+                <p class="brand-subtitle">Đăng nhập để quản lý hệ thống</p>
+            </div>
+
+            <!-- Alert -->
+            <div id="loginAlert" class="alert d-none">
+                <span id="loginMessage">Có lỗi xảy ra</span>
+            </div>
+
+            <!-- Form -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email"
+                        placeholder="admin@4foods.com"
+                        autocomplete="email"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Mật khẩu</label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password"
+                            placeholder="••••••••"
+                            autocomplete="current-password"
+                            required>
+                        <span class="password-toggle" id="togglePassword">👁️</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">
+                    <span>Đăng nhập</span>
+                </button>
+            </form>
+
+            <div class="footer-text">
+                🔒 Chỉ dành cho quản trị viên
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

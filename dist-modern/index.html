@@ -4,14 +4,6 @@
     <!-- Meta Tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Modern Bootstrap 5 Admin Template - Clean, responsive dashboard">
-    <meta name="keywords" content="bootstrap, admin, dashboard, template, modern, responsive">
-    <meta name="author" content="Bootstrap Admin Template">
-    
-    <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="Modern Bootstrap Admin Template">
-    <meta property="og:description" content="Clean and modern admin dashboard template built with Bootstrap 5">
-    <meta property="og:type" content="website">
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="./assets/favicon-BfPjT8xF.svg">
@@ -25,15 +17,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Title -->
-    <title>Dashboard - Modern Bootstrap Admin</title>
+    <title>Dashboard</title>
     
     <!-- Theme Color -->
     <meta name="theme-color" content="#6366f1">
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="./assets/manifest-CRl8oZJ-.json">
-  <script type="module" crossorigin src="./assets/main-f0Mg-34g.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/main-DLfE7m78.css">
+    <link rel="manifest" href="./assets/manifest-Bye-vVNu.json">
+  <script type="module" crossorigin src="./assets/auth.service-Z7GyztH_.js"></script>
+  <script type="module" crossorigin src="./assets/main-DjPgJPFM.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/main-DQSTPT65.css">
 </head>
 
 <body data-page="dashboard" class="admin-layout">
@@ -154,7 +147,9 @@
                                 <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
                                 <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                                <a class="dropdown-item" href="#" data-action="logout">
+                                    <i class="bi bi-box-arrow-right me-2"></i>  Logout
+                                </a>
                             </ul>
                         </div>
                     </div>
@@ -357,143 +352,109 @@
 
                 <!-- Stats Cards with Alpine.js -->
                 <div class="row g-4 mb-4">
-                    <div class="col-xl-3 col-lg-6" x-data="statsCounter(12426, 5)">
-                        <div class="card stats-card">
+                    <div class="col-md-6 col-xl-3">
+                        <div class="card overview-card">
                             <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <p class="text-muted mb-2">Doanh thu hôm nay</p>
+                                        <h3 class="mb-0" id="revenue-today">0 đ</h3>
+                                    </div>
+                                </div>
                                 <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0">
-                                        <div class="stats-icon bg-primary bg-opacity-10 text-primary">
-                                            <i class="bi bi-people"></i>
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <h6 class="mb-0 text-muted">Total Users</h6>
-                                        <h3 class="mb-0" x-text="value.toLocaleString()" data-stat-value>12,426</h3>
-                                        <small class="text-success">
-                                            <i class="bi bi-arrow-up"></i> +12.5%
-                                        </small>
-                                    </div>
+                                    <small class="text-success me-1" id="revenue-change">
+                                        <i class="bi bi-arrow-up"></i> +0%
+                                    </small>
+                                    <small class="text-muted">so với hôm qua</small>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-lg-6">
-                        <div class="card stats-card">
+                    <div class="col-md-6 col-xl-3">
+                        <div class="card overview-card">
                             <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <p class="text-muted mb-2">Đơn hàng hôm nay</p>
+                                        <h3 class="mb-0" id="orders-today">0</h3>
+                                    </div>
+                                </div>
                                 <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0">
-                                        <div class="stats-icon bg-success bg-opacity-10 text-success">
-                                            <i class="bi bi-graph-up"></i>
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <h6 class="mb-0 text-muted">Revenue</h6>
-                                        <h3 class="mb-0">$54,320</h3>
-                                        <small class="text-success">
-                                            <i class="bi bi-arrow-up"></i> +8.2%
-                                        </small>
-                                    </div>
+                                    <small class="text-success me-1" id="orders-change">
+                                        <i class="bi bi-arrow-up"></i> +0%
+                                    </small>
+                                    <small class="text-muted">so với hôm qua</small>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-lg-6">
-                        <div class="card stats-card">
+                    <div class="col-md-6 col-xl-3">
+                        <div class="card overview-card">
                             <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <p class="text-muted mb-2">Người dùng mới</p>
+                                        <h3 class="mb-0" id="users-today">0</h3>
+                                    </div>
+                                </div>
                                 <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0">
-                                        <div class="stats-icon bg-warning bg-opacity-10 text-warning">
-                                            <i class="bi bi-bag-check"></i>
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <h6 class="mb-0 text-muted">Orders</h6>
-                                        <h3 class="mb-0">1,852</h3>
-                                        <small class="text-danger">
-                                            <i class="bi bi-arrow-down"></i> -2.1%
-                                        </small>
-                                    </div>
+                                    <small class="text-success me-1" id="users-change">
+                                        <i class="bi bi-arrow-up"></i> +0%
+                                    </small>
+                                    <small class="text-muted">so với hôm qua</small>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-xl-3 col-lg-6">
-                        <div class="card stats-card">
+                    <div class="col-md-6 col-xl-3">
+                        <div class="card overview-card">
                             <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <p class="text-muted mb-2">Shop mới</p>
+                                        <h3 class="mb-0" id="shops-today">0</h3>
+                                    </div>
+                                </div>
                                 <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0">
-                                        <div class="stats-icon bg-info bg-opacity-10 text-info">
-                                            <i class="bi bi-clock-history"></i>
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <h6 class="mb-0 text-muted">Avg. Response</h6>
-                                        <h3 class="mb-0">2.3s</h3>
-                                        <small class="text-success">
-                                            <i class="bi bi-arrow-up"></i> +5.4%
-                                        </small>
-                                    </div>
+                                    <small class="text-success me-1" id="shops-change">
+                                        <i class="bi bi-arrow-up"></i> +0%
+                                    </small>
+                                    <small class="text-muted">so với hôm qua</small>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Chart Section -->
+                <!-- Hàng 2: Doanh thu các tháng (70%) + Hoạt động gần đây (30%) -->
                 <div class="row g-4 mb-4">
                     <div class="col-lg-8">
-                        <div class="card">
+                        <div class="card h-100">
                             <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">Revenue Overview</h5>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <button type="button" class="btn btn-outline-primary active" data-chart-period="7d">7D</button>
-                                    <button type="button" class="btn btn-outline-primary" data-chart-period="30d">30D</button>
-                                    <button type="button" class="btn btn-outline-primary" data-chart-period="90d">90D</button>
-                                    <button type="button" class="btn btn-outline-primary" data-chart-period="1y">1Y</button>
+                                <h5 class="mb-0">Doanh thu các tháng</h5>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" data-period="12">12 tháng</button>
                                 </div>
                             </div>
                             <div class="card-body">
-                                <canvas id="revenueChart" height="250"></canvas>
+                                <canvas id="monthlyRevenueChart" height="100"></canvas>
                             </div>
                         </div>
                     </div>
 
                     <div class="col-lg-4">
-                        <div class="card">
+                        <div class="card h-100">
                             <div class="card-header">
-                                <h5 class="card-title mb-0">Recent Activity</h5>
+                                <h5 class="mb-0">Hoạt động gần đây</h5>
                             </div>
-                            <div class="card-body">
-                                <div class="activity-feed">
-                                    <div class="activity-item">
-                                        <div class="activity-icon bg-primary bg-opacity-10 text-primary">
-                                            <i class="bi bi-person-plus"></i>
-                                        </div>
-                                        <div class="activity-content">
-                                            <p class="mb-1">New user registered</p>
-                                            <small class="text-muted">2 minutes ago</small>
-                                        </div>
-                                    </div>
-                                    <div class="activity-item">
-                                        <div class="activity-icon bg-success bg-opacity-10 text-success">
-                                            <i class="bi bi-bag-check"></i>
-                                        </div>
-                                        <div class="activity-content">
-                                            <p class="mb-1">Order #1234 completed</p>
-                                            <small class="text-muted">5 minutes ago</small>
-                                        </div>
-                                    </div>
-                                    <div class="activity-item">
-                                        <div class="activity-icon bg-warning bg-opacity-10 text-warning">
-                                            <i class="bi bi-exclamation-triangle"></i>
-                                        </div>
-                                        <div class="activity-content">
-                                            <p class="mb-1">Server maintenance scheduled</p>
-                                            <small class="text-muted">1 hour ago</small>
-                                        </div>
+                            <div class="card-body p-0">
+                                <div id="recent-activity-list" class="activity-list" style="max-height: 380px; overflow-y: auto;">
+                                    <div class="text-center py-4 text-muted">
+                                        <i class="bi bi-hourglass-split fs-3"></i>
+                                        <p class="mb-0 mt-2">Đang tải...</p>
                                     </div>
                                 </div>
                             </div>
@@ -501,53 +462,32 @@
                     </div>
                 </div>
 
-                <!-- Additional Charts Row -->
+                <!-- Hàng 3: Đơn hàng gần đây + Phân bố trạng thái -->
                 <div class="row g-4 mb-4">
-                    <div class="col-lg-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">User Growth (Last 7 Days)</h5>
-                            </div>
-                            <div class="card-body">
-                                <canvas id="userGrowthChart" height="200"></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">Order Status Distribution</h5>
-                            </div>
-                            <div class="card-body">
-                                <canvas id="orderStatusChart" height="200"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- New Widgets Row -->
-                <div class="row g-4 mb-4">
-                    <!-- Recent Orders -->
                     <div class="col-lg-8">
-                        <div class="card">
+                        <div class="card h-100">
                             <div class="card-header">
-                                <h5 class="card-title mb-0">Recent Orders</h5>
+                                <h5 class="mb-0">Đơn hàng gần đây</h5>
                             </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
+                            <div class="card-body p-0">
+                                <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
                                     <table class="table table-hover mb-0">
-                                        <thead class="table-light">
+                                        <thead class="table-light sticky-top">
                                             <tr>
-                                                <th>Order ID</th>
-                                                <th>Customer</th>
-                                                <th>Amount</th>
-                                                <th>Status</th>
-                                                <th>Date</th>
+                                                <th>Mã đơn</th>
+                                                <th>Khách hàng</th>
+                                                <th>Số tiền</th>
+                                                <th>Trạng thái</th>
+                                                <th>Ngày tạo</th>
                                             </tr>
                                         </thead>
                                         <tbody id="recent-orders-table">
-                                            <!-- Orders will be injected here by dashboard.js -->
+                                            <tr>
+                                                <td colspan="5" class="text-center py-5 text-muted">
+                                                    <i class="bi bi-inbox fs-3"></i>
+                                                    <p class="mb-0 mt-2">Chưa có đơn hàng</p>
+                                                </td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -555,28 +495,30 @@
                         </div>
                     </div>
 
-                    <!-- Storage Status -->
                     <div class="col-lg-4">
-                        <div class="card">
+                        <div class="card h-100">
                             <div class="card-header">
-                                <h5 class="card-title mb-0">Storage Status</h5>
+                                <h5 class="mb-0">Phân bố trạng thái đơn hàng</h5>
                             </div>
-                            <div class="card-body">
-                                <div id="storageStatusChart"></div>
+                            <div class="card-body d-flex align-items-center justify-content-center">
+                                <canvas id="orderStatusChart" style="max-height: 300px;"></canvas>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Sales by Location -->
+                <!-- Hàng 4: Tăng trưởng người dùng trong tháng -->
                 <div class="row g-4">
                     <div class="col-12">
                         <div class="card">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">Sales by Location</h5>
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Tăng trưởng người dùng trong tháng</h5>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary active" data-growth="30">30 ngày</button>
+                                </div>
                             </div>
                             <div class="card-body">
-                                <div id="salesByLocationChart" style="min-height: 400px; width: 100%;"></div>
+                                <canvas id="accountGrowthChart" height="100"></canvas>
                             </div>
                         </div>
                     </div>
@@ -584,20 +526,6 @@
 
             </div>
         </main>
-
-        <!-- Footer -->
-        <footer class="admin-footer">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-6">
-                        <p class="mb-0 text-muted">© 2025 Modern Bootstrap Admin Template</p>
-                    </div>
-                    <div class="col-md-6 text-md-end">
-                        <p class="mb-0 text-muted">Built with Bootstrap 5.3.7</p>
-                    </div>
-                </div>
-            </div>
-        </footer>
         </div> <!-- /.admin-wrapper -->
     </div>
 

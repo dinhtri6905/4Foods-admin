@@ -3,27 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Management - Modern Bootstrap Admin</title>
-    
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Comprehensive product management with inventory tracking, categories, and analytics">
-    <meta name="keywords" content="bootstrap, admin, dashboard, products, inventory, e-commerce">
+    <title>Product Management</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="./assets/favicon-BfPjT8xF.svg">
     <link rel="icon" type="image/png" href="./assets/favicon-CIKpfr-F.png">
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="./assets/manifest-CRl8oZJ-.json">
+    <link rel="manifest" href="./assets/manifest-Bye-vVNu.json">
     
     <!-- Preload critical fonts -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- ApexCharts CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>  <script type="module" crossorigin src="./assets/main-f0Mg-34g.js"></script>
-  <script type="module" crossorigin src="./assets/products-Bf5ZuPHt.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/main-DLfE7m78.css">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>  <script type="module" crossorigin src="./assets/auth.service-Z7GyztH_.js"></script>
+  <script type="module" crossorigin src="./assets/main-DjPgJPFM.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/main-DQSTPT65.css">
 </head>
 
 <body data-page="products" class="product-management">
@@ -136,7 +132,9 @@
                                     <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
                                     <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                                    <a class="dropdown-item" href="#" data-action="logout">
+                                        <i class="bi bi-box-arrow-right me-2"></i>  Logout
+                                    </a>
                                 </ul>
                             </div>
                         </div>
@@ -329,335 +327,227 @@
                         </div>
                     </div>
 
-                    <!-- Product Management Container -->
-                    <div x-data="productTable" x-init="init()">
-                        
-                        <!-- Product Stats Widgets -->
-                        <div class="row g-4 g-lg-5 mb-5">
-                            <div class="col-xl-3 col-lg-6">
-                                <div class="card stats-card">
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div class="d-flex align-items-center">
-                                            <div class="stats-icon bg-primary bg-opacity-10 text-primary me-3">
-                                                <i class="bi bi-box"></i>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-0 text-muted">Total Products</h6>
-                                                <h3 class="mb-0" x-text="stats.total"></h3>
-                                                <small class="text-success">
-                                                    <i class="bi bi-arrow-up"></i> +5% from last month
-                                                </small>
-                                            </div>
+                    <!-- Khối hàng 1: Summary Cards -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-square bg-primary bg-opacity-10 text-primary rounded-3 p-3 me-3">
+                                            <i class="bi bi-box-seam-fill fs-3"></i>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-3 col-lg-6">
-                                <div class="card stats-card">
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div class="d-flex align-items-center">
-                                            <div class="stats-icon bg-success bg-opacity-10 text-success me-3">
-                                                <i class="bi bi-check-circle"></i>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-0 text-muted">In Stock</h6>
-                                                <h3 class="mb-0" x-text="stats.inStock"></h3>
-                                                <small class="text-success">
-                                                    <i class="bi bi-arrow-up"></i> Well stocked
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-3 col-lg-6">
-                                <div class="card stats-card">
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div class="d-flex align-items-center">
-                                            <div class="stats-icon bg-warning bg-opacity-10 text-warning me-3">
-                                                <i class="bi bi-exclamation-triangle"></i>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-0 text-muted">Low Stock</h6>
-                                                <h3 class="mb-0" x-text="stats.lowStock"></h3>
-                                                <small class="text-warning">
-                                                    <i class="bi bi-exclamation-circle"></i> Needs attention
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-3 col-lg-6">
-                                <div class="card stats-card">
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div class="d-flex align-items-center">
-                                            <div class="stats-icon bg-info bg-opacity-10 text-info me-3">
-                                                <i class="bi bi-currency-dollar"></i>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-0 text-muted">Total Value</h6>
-                                                <h3 class="mb-0" x-text="`$${stats.totalValue.toLocaleString()}`"></h3>
-                                                <small class="text-info">
-                                                    <i class="bi bi-info-circle"></i> Inventory value
-                                                </small>
-                                            </div>
+                                        <div>
+                                            <h6 class="text-secondary text-uppercase mb-1 small">Tổng sản phẩm</h6>
+                                            <h2 class="fw-bold mb-0" id="total-products-count">0</h2>
+                                            <small class="text-success"><i class="bi bi-arrow-up"></i> Tất cả sản phẩm</small>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Charts Row -->
-                        <div class="row g-4 g-lg-5 mb-5">
-                            <!-- Sales Performance Chart -->
-                            <div class="col-lg-8">
-                                <div class="card h-100">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h5 class="card-title mb-0">Sales Performance</h5>
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <input type="radio" class="btn-check" name="salesPeriod" id="sales7d" autocomplete="off" checked>
-                                            <label class="btn btn-outline-secondary" for="sales7d">7D</label>
-                                            <input type="radio" class="btn-check" name="salesPeriod" id="sales30d" autocomplete="off">
-                                            <label class="btn btn-outline-secondary" for="sales30d">30D</label>
-                                            <input type="radio" class="btn-check" name="salesPeriod" id="sales90d" autocomplete="off">
-                                            <label class="btn btn-outline-secondary" for="sales90d">90D</label>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-square bg-success bg-opacity-10 text-success rounded-3 p-3 me-3">
+                                            <i class="bi bi-currency-dollar fs-3"></i>
                                         </div>
-                                    </div>
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div id="salesChart" style="height: 300px;"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Category Distribution -->
-                            <div class="col-lg-4">
-                                <div class="card h-100">
-                                    <div class="card-header">
-                                        <h5 class="card-title mb-0">Category Distribution</h5>
-                                    </div>
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div id="categoryChart" style="height: 200px;"></div>
-                                        <div class="mt-3">
-                                            <template x-for="category in categoryStats" :key="category.name">
-                                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                                    <span class="small" x-text="category.name"></span>
-                                                    <div class="d-flex align-items-center">
-                                                        <span class="small text-muted me-2" x-text="`${category.percentage}%`"></span>
-                                                        <span class="small fw-medium" x-text="category.count"></span>
-                                                    </div>
-                                                </div>
-                                            </template>
+                                        <div>
+                                            <h6 class="text-secondary text-uppercase mb-1 small">Tổng giá trị</h6>
+                                            <h2 class="fw-bold mb-0" id="total-value-amount">0đ</h2>
+                                            <small class="text-success"><i class="bi bi-arrow-up"></i> Tổng giá trị kho</small>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Products Table -->
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="row align-items-center">
-                                    <div class="col">
-                                        <h5 class="card-title mb-0">Product Catalog</h5>
+                    <!-- Khối hàng 2: Category Sales Timeline Chart -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Doanh thu theo Category (7 ngày)</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="categorySalesChart" style="height: 350px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Khối hàng 2.5: Top 5 Sản phẩm bán chạy -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-trophy-fill text-warning me-2"></i>
+                                        Top 5 Sản phẩm bán chạy
+                                    </h5>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="top-selling-list" style="max-height: 400px; overflow-y: auto;">
+                                        <!-- JS will render here -->
                                     </div>
-                                    <div class="col-auto">
-                                        <div class="d-flex gap-2">
-                                            <!-- Search -->
-                                            <div class="position-relative">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Khối hàng 3: Categories List + Distribution Chart -->
+                    <div class="row g-4 mb-4">
+                        <!-- Categories List (70%) -->
+                        <div class="col-lg-8">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Danh sách Category</h5>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="categories-list" style="max-height: 500px; overflow-y: auto;">
+                                        <!-- JS will render here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Category Distribution (30%) -->
+                        <div class="col-lg-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Phân bố Category</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="categoryDistributionChart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Khối hàng 4: Products List -->
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="row align-items-center">
+                                        <div class="col">
+                                            <h5 class="card-title mb-0">Danh sách sản phẩm</h5>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                <!-- Search -->
                                                 <input type="search" 
-                                                       class="form-control form-control-sm" 
-                                                       placeholder="Search products..."
-                                                       x-model="searchQuery"
-                                                       @input="filterProducts()"
-                                                       style="width: 200px;">
-                                                <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-2 text-muted"></i>
+                                                    id="search-input"
+                                                    class="form-control form-control-sm" 
+                                                    placeholder="Tìm kiếm..."
+                                                    style="width: 200px;">
+                                                
+                                                <!-- Category Filter -->
+                                                <select class="form-select form-select-sm" 
+                                                        id="category-filter"
+                                                        style="width: 150px;">
+                                                    <option value="">Tất cả category</option>
+                                                </select>
+                                                
+                                                <!-- Status Filter -->
+                                                <select class="form-select form-select-sm" 
+                                                        id="status-filter"
+                                                        style="width: 130px;">
+                                                    <option value="">Tất cả status</option>
+                                                    <option value="pending">Pending</option>
+                                                    <option value="displayed">Displayed</option>
+                                                    <option value="hidden">Hidden</option>
+                                                    <option value="violated">Violated</option>
+                                                </select>
+
+                                                <!-- Price Range -->
+                                                <input type="number" 
+                                                    id="min-price-filter"
+                                                    class="form-control form-control-sm" 
+                                                    placeholder="Giá min"
+                                                    style="width: 100px;">
+                                                <input type="number" 
+                                                    id="max-price-filter"
+                                                    class="form-control form-control-sm" 
+                                                    placeholder="Giá max"
+                                                    style="width: 100px;">
                                             </div>
-                                            
-                                            <!-- Category Filter -->
-                                            <select class="form-select form-select-sm" 
-                                                    x-model="categoryFilter" 
-                                                    @change="filterProducts()"
-                                                    style="width: 150px;">
-                                                <option value="">All Categories</option>
-                                                <option value="electronics">Electronics</option>
-                                                <option value="clothing">Clothing</option>
-                                                <option value="books">Books</option>
-                                                <option value="home">Home & Garden</option>
-                                            </select>
-                                            
-                                            <!-- Stock Filter -->
-                                            <select class="form-select form-select-sm" 
-                                                    x-model="stockFilter" 
-                                                    @change="filterProducts()"
-                                                    style="width: 150px;">
-                                                <option value="">All Stock</option>
-                                                <option value="in-stock">In Stock</option>
-                                                <option value="low-stock">Low Stock</option>
-                                                <option value="out-of-stock">Out of Stock</option>
-                                            </select>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-body p-0">
+
                                 <!-- Bulk Actions Bar -->
-                                <div class="bulk-actions-bar p-3 bg-light border-bottom" x-show="selectedProducts.length > 0" x-transition>
+                                <div id="bulk-actions-bar" class="bg-primary bg-opacity-10 border-bottom p-3 d-none">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-muted">
-                                            <span x-text="selectedProducts.length"></span> product(s) selected
-                                        </span>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-check-circle-fill text-primary me-2"></i>
+                                            <span class="fw-medium text-primary">
+                                                <span id="selected-count">0</span> sản phẩm đã chọn
+                                            </span>
+                                        </div>
                                         <div class="d-flex gap-2">
-                                            <button class="btn btn-sm btn-outline-secondary" @click="bulkAction('publish')">
-                                                <i class="bi bi-eye me-1"></i>Publish
+                                            <button class="btn btn-sm btn-success" id="bulk-display-btn">
+                                                <i class="bi bi-eye me-1"></i>Display
                                             </button>
-                                            <button class="btn btn-sm btn-outline-secondary" @click="bulkAction('unpublish')">
-                                                <i class="bi bi-eye-slash me-1"></i>Unpublish
+                                            <button class="btn btn-sm btn-warning" id="bulk-hide-btn">
+                                                <i class="bi bi-eye-slash me-1"></i>Hide
                                             </button>
-                                            <button class="btn btn-sm btn-outline-danger" @click="bulkAction('delete')">
+                                            <button class="btn btn-sm btn-danger" id="bulk-delete-btn">
                                                 <i class="bi bi-trash me-1"></i>Delete
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary" id="clear-selection-btn">
+                                                <i class="bi bi-x-lg"></i>
                                             </button>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Table -->
-                                <div class="table-responsive">
-                                    <table class="table table-hover mb-0">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th style="width: 40px;">
-                                                    <input type="checkbox" 
-                                                           class="form-check-input" 
-                                                           @change="toggleAll($event.target.checked)"
-                                                           :checked="selectedProducts.length === filteredProducts.length && filteredProducts.length > 0">
-                                                </th>
-                                                <th>Product</th>
-                                                <th @click="sortBy('category')" class="sortable">Category</th>
-                                                <th @click="sortBy('price')" class="sortable">Price</th>
-                                                <th @click="sortBy('stock')" class="sortable">Stock</th>
-                                                <th>Status</th>
-                                                <th @click="sortBy('created')" class="sortable">Created</th>
-                                                <th style="width: 120px;">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <template x-for="product in paginatedProducts" :key="product.id">
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead class="table-light">
                                                 <tr>
-                                                    <td>
-                                                        <input type="checkbox" 
-                                                               class="form-check-input" 
-                                                               :value="product.id"
-                                                               x-model="selectedProducts">
-                                                    </td>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <img :src="product.image" 
-                                                                 class="product-image me-3" 
-                                                                 :alt="product.name">
-                                                            <div>
-                                                                <div class="fw-medium" x-text="product.name"></div>
-                                                                <small class="text-muted" x-text="'SKU: ' + product.sku"></small>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge bg-light text-dark" x-text="product.category"></span>
-                                                    </td>
-                                                    <td x-text="`$${product.price}`"></td>
-                                                    <td>
-                                                        <span class="badge stock-badge" 
-                                                              :class="{
-                                                                  'in-stock': product.stock > 20,
-                                                                  'low-stock': product.stock > 0 && product.stock <= 20,
-                                                                  'out-of-stock': product.stock === 0
-                                                              }"
-                                                              x-text="product.stock + ' units'"></span>
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge" 
-                                                              :class="{
-                                                                  'bg-success': product.status === 'published',
-                                                                  'bg-secondary': product.status === 'draft',
-                                                                  'bg-warning': product.status === 'pending'
-                                                              }"
-                                                              x-text="product.status"></span>
-                                                    </td>
-                                                    <td x-text="product.created"></td>
-                                                    <td>
-                                                        <div class="dropdown">
-                                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
-                                                                    type="button" 
-                                                                    data-bs-toggle="dropdown">
-                                                                <i class="bi bi-three-dots"></i>
-                                                            </button>
-                                                            <ul class="dropdown-menu">
-                                                                <li><a class="dropdown-item" href="#" @click="editProduct(product)">
-                                                                    <i class="bi bi-pencil me-2"></i>Edit
-                                                                </a></li>
-                                                                <li><a class="dropdown-item" href="#" @click="viewProduct(product)">
-                                                                    <i class="bi bi-eye me-2"></i>View Details
-                                                                </a></li>
-                                                                <li><a class="dropdown-item" href="#" @click="duplicateProduct(product)">
-                                                                    <i class="bi bi-copy me-2"></i>Duplicate
-                                                                </a></li>
-                                                                <li><hr class="dropdown-divider"></li>
-                                                                <li><a class="dropdown-item text-danger" href="#" @click="deleteProduct(product)">
-                                                                    <i class="bi bi-trash me-2"></i>Delete
-                                                                </a></li>
-                                                            </ul>
-                                                        </div>
-                                                    </td>
+                                                    <th style="width: 40px;">
+                                                        <input type="checkbox" class="form-check-input" id="select-all-checkbox">
+                                                    </th>
+                                                    <th>Sản phẩm</th>
+                                                    <th>Giá</th>
+                                                    <th>Stock</th>
+                                                    <th>Rating</th>
+                                                    <th>Status</th>
+                                                    <th>Views</th>
+                                                    <th>Orders</th>
+                                                    <th style="width: 100px;">Actions</th>
                                                 </tr>
-                                            </template>
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody id="products-list-tbody">
+                                                <!-- JS will render here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
 
                                 <!-- Pagination -->
-                                <div class="d-flex justify-content-between align-items-center p-3">
-                                    <div class="text-muted">
-                                        Showing <span x-text="(currentPage - 1) * itemsPerPage + 1"></span> to 
-                                        <span x-text="Math.min(currentPage * itemsPerPage, filteredProducts.length)"></span> of 
-                                        <span x-text="filteredProducts.length"></span> results
+                                <div class="card-footer">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="text-muted" id="pagination-info">
+                                            Showing 0 to 0 of 0 results
+                                        </div>
+                                        <nav>
+                                            <ul class="pagination pagination-sm mb-0" id="pagination-nav">
+                                                <!-- JS will render here -->
+                                            </ul>
+                                        </nav>
                                     </div>
-                                    <nav>
-                                        <ul class="pagination pagination-sm mb-0">
-                                            <li class="page-item" :class="{ 'disabled': currentPage === 1 }">
-                                                <a class="page-link" href="#" @click.prevent="goToPage(currentPage - 1)">Previous</a>
-                                            </li>
-                                            <template x-for="(page, index) in visiblePages" :key="`page-${index}`">
-                                                <li class="page-item" :class="{ 'active': page === currentPage }">
-                                                    <a class="page-link" href="#" @click.prevent="page !== '...' && goToPage(page)" x-text="page"></a>
-                                                </li>
-                                            </template>
-                                            <li class="page-item" :class="{ 'disabled': currentPage === totalPages }">
-                                                <a class="page-link" href="#" @click.prevent="goToPage(currentPage + 1)">Next</a>
-                                            </li>
-                                        </ul>
-                                    </nav>
                                 </div>
                             </div>
                         </div>
-                        
-                    </div> <!-- End Product Management Container -->
+                    </div>
 
                 </div>
             </main>
-
-            <!-- Footer -->
-            <footer class="admin-footer">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p class="mb-0 text-muted">© 2025 Modern Bootstrap Admin Template</p>
-                        </div>
-                        <div class="col-md-6 text-md-end">
-                            <p class="mb-0 text-muted">Built with Bootstrap 5.3.7</p>
-                        </div>
-                    </div>
-                </div>
-            </footer>
 
         </div> <!-- /.admin-wrapper -->
     </div>
@@ -755,6 +645,50 @@
         </div>
     </div>
 
+    <!-- ==================== PRODUCT DETAIL MODAL ==================== -->
+    <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+            <div class="modal-content bg-dark border-secondary">
+                
+                <!-- Modal Header -->
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-white" id="productDetailModalLabel">
+                        <i class="bi bi-box-seam me-2"></i>Chi tiết sản phẩm
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="modal-body" id="productDetailContent">
+                    <!-- Loading State -->
+                    <div class="text-center py-5" id="productDetailLoading">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="text-muted mt-3 mb-0">Đang tải thông tin sản phẩm...</p>
+                    </div>
+
+                    <!-- Error State -->
+                    <div class="alert alert-danger d-none" role="alert" id="productDetailError">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span id="productDetailErrorMessage"></span>
+                    </div>
+
+                    <!-- Content Container -->
+                    <div id="productDetailData" class="d-none"></div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Đóng
+                    </button>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    
     <!-- Page-specific Component -->
 
     <!-- Main App Script -->

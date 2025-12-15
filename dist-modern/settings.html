@@ -3,24 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings & Preferences - Modern Bootstrap Admin</title>
-    
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Application settings and user preferences configuration">
-    <meta name="keywords" content="bootstrap, admin, dashboard, settings, preferences, configuration">
+    <title>Settings & Preferences</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="./assets/favicon-BfPjT8xF.svg">
     <link rel="icon" type="image/png" href="./assets/favicon-CIKpfr-F.png">
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="./assets/manifest-CRl8oZJ-.json">
+    <link rel="manifest" href="./assets/manifest-Bye-vVNu.json">
     
     <!-- Preload critical fonts -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">  <script type="module" crossorigin src="./assets/main-f0Mg-34g.js"></script>
-  <script type="module" crossorigin src="./assets/settings-CYDU_ohR.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/main-DLfE7m78.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">  <script type="module" crossorigin src="./assets/auth.service-Z7GyztH_.js"></script>
+  <script type="module" crossorigin src="./assets/main-DjPgJPFM.js"></script>
+  <script type="module" crossorigin src="./assets/settings-5bK4w7z9.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/main-DQSTPT65.css">
 </head>
 
 <body data-page="settings" class="settings-page">
@@ -133,7 +130,9 @@
                                     <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
                                     <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                                    <a class="dropdown-item" href="#" data-action="logout">
+                                        <i class="bi bi-box-arrow-right me-2"></i>  Logout
+                                    </a>
                                 </ul>
                             </div>
                         </div>

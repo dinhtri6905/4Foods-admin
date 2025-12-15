@@ -1,7 +1,7 @@
 {
   "name": "4Foods Admin",
   "short_name": "4Foods",
-  "description": "Modern Bootstrap 5 Admin Dashboard Template",
+  "description": "4Foods Admin",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

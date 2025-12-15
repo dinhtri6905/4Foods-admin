@@ -1,32 +1,103 @@
+// ============================================
+// WRAPPER & BASE SETUP
+// ============================================
+html,
+body {
+  height: 100%;
+  overflow-x: hidden; // Tránh cuộn ngang toàn trang
+}
+
+#admin-wrapper {
+  min-height: 100vh;
+  position: relative;
+  // KHÔNG set overflow: hidden ở đây
+}
+
+// ============================================
+// SIDEBAR - DESKTOP
+// ============================================
 .admin-sidebar {
-    width: $sidebar-width;
-    z-index: 1040; 
-    transition: margin-left 0.3s ease-in-out;
+  position: fixed;        // Cố định sidebar bên trái
+  top: 0;
+  left: 0;
+  bottom: 0;              // Thay vì height: 100vh (tránh vấn đề mobile)
+  width: $sidebar-width;
+  z-index: 1040;
+  
+  // Cuộn riêng cho sidebar
+  overflow-y: auto;
+  overflow-x: hidden;
+  
+  // Animation khi thu gọn/mở rộng
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(0);
+  
+  // Custom scrollbar (optional)
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
 }
 
+// ============================================
+// MAIN CONTENT AREA
+// ============================================
 .admin-main {
-    transition: margin-left 0.3s ease-in-out;
-    margin-left: $sidebar-width;
+  margin-left: $sidebar-width;
+  transition: margin-left 0.3s ease-in-out;
+  min-height: 100vh;
 }
 
-// Collapsed State
-&.sidebar-collapsed {
-    .admin-sidebar {
-        margin-left: -$sidebar-width;
-    }
+// ============================================
+// COLLAPSED STATE
+// ============================================
+.sidebar-collapsed {
+  .admin-sidebar {
+    transform: translateX(-$sidebar-width); // Dùng transform thay vì margin
+  }
 
-    .admin-main {
-        margin-left: 0;
-    }
+  .admin-main {
+    margin-left: 0;
+  }
 
-    .hamburger-menu {
-        left: 1rem;
-    }
+  .hamburger-menu {
+    left: 1rem;
+  }
 }
 
-// Mobile view
+// ============================================
+// MOBILE VIEW (< 992px)
+// ============================================
 @media (max-width: 991.98px) {
+  .admin-sidebar {
+    // Mobile: sidebar phủ lên main content (overlay)
+    transform: translateX(-100%);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .admin-main {
+    margin-left: 0; // Main chiếm full màn hình
+  }
+
+  // Khi mở sidebar trên mobile
+  &:not(.sidebar-collapsed) {
     .admin-sidebar {
-        // ... existing code ...
+      transform: translateX(0);
     }
-} 
+    
+    // Backdrop/overlay (optional)
+    &::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1030;
+    }
+  }
+}

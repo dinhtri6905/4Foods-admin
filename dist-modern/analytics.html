@@ -3,18 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics Dashboard - Modern Bootstrap Admin</title>
-    
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Comprehensive analytics dashboard with advanced charts, KPIs, and data visualizations">
-    <meta name="keywords" content="bootstrap, admin, dashboard, analytics, charts, data visualization">
+    <title>Analytics Dashboard</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="./assets/favicon-BfPjT8xF.svg">
     <link rel="icon" type="image/png" href="./assets/favicon-CIKpfr-F.png">
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="./assets/manifest-CRl8oZJ-.json">
+    <link rel="manifest" href="./assets/manifest-Bye-vVNu.json">
     
     <!-- Preload critical fonts -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style">
@@ -24,9 +20,9 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <!-- Custom Styles for Analytics Dashboard -->
-  <script type="module" crossorigin src="./assets/main-f0Mg-34g.js"></script>
-  <script type="module" crossorigin src="./assets/analytics-Dx-GObNO.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/main-DLfE7m78.css">
+  <script type="module" crossorigin src="./assets/auth.service-Z7GyztH_.js"></script>
+  <script type="module" crossorigin src="./assets/main-DjPgJPFM.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/main-DQSTPT65.css">
 </head>
 
 <body data-page="analytics" class="analytics-page">
@@ -139,7 +135,9 @@
                                     <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
                                     <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                                    <a class="dropdown-item" href="#" data-action="logout">
+                                        <i class="bi bi-box-arrow-right me-2"></i>  Logout
+                                    </a>
                                 </ul>
                             </div>
                         </div>
@@ -336,452 +334,231 @@
                         </div>
                     </div>
 
-                    <!-- Analytics Dashboard Container -->
-                    <div x-data="analyticsComponent" x-init="init()">
-                        
-                        <!-- Key Metrics Row -->
-                        <div class="row g-4 g-lg-5 g-xl-6 mb-5 mb-lg-5 mb-xl-6">
-                            <div class="col-xl-3 col-lg-6">
-                                <div class="card metric-card revenue">
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div>
-                                                <h6 class="text-muted mb-1">Total Revenue</h6>
-                                                <h3 class="mb-0" x-text="formatCurrency(metrics.revenue)">$124,592</h3>
-                                                <small class="trend-up">
-                                                    <i class="bi bi-arrow-up"></i> +12.5% from last month
-                                                </small>
-                                            </div>
-                                            <div class="stats-icon bg-success bg-opacity-10 text-success">
-                                                <i class="bi bi-currency-dollar"></i>
-                                            </div>
-                                        </div>
-                                    </div>
+                <!-- 1. Biểu đồ doanh thu 30 ngày -->
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">DOANH THU 30 NGÀY GẦN NHẤT</h5>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        30 Ngày
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">7 Ngày</a></li>
+                                        <li><a class="dropdown-item" href="#">30 Ngày</a></li>
+                                        <li><a class="dropdown-item" href="#">90 Ngày</a></li>
+                                    </ul>
                                 </div>
                             </div>
-                            <div class="col-xl-3 col-lg-6">
-                                <div class="card metric-card visitors">
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div>
-                                                <h6 class="text-muted mb-1">Total Visitors</h6>
-                                                <h3 class="mb-0" x-text="formatNumber(metrics.visitors)">45,672</h3>
-                                                <small class="trend-up">
-                                                    <i class="bi bi-arrow-up"></i> +8.2% from last month
-                                                </small>
-                                            </div>
-                                            <div class="stats-icon bg-primary bg-opacity-10 text-primary">
-                                                <i class="bi bi-people"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="card-body">
+                                <div id="revenueChart" style="height: 350px; width: 100%;"></div>
                             </div>
-                            <div class="col-xl-3 col-lg-6">
-                                <div class="card metric-card conversion">
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div>
-                                                <h6 class="text-muted mb-1">Conversion Rate</h6>
-                                                <h3 class="mb-0" x-text="metrics.conversionRate + '%'">3.45%</h3>
-                                                <small class="trend-up">
-                                                    <i class="bi bi-arrow-up"></i> +2.1% from last month
-                                                </small>
-                                            </div>
-                                            <div class="stats-icon bg-warning bg-opacity-10 text-warning">
-                                                <i class="bi bi-graph-up-arrow"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xl-3 col-lg-6">
-                                <div class="card metric-card bounce">
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div>
-                                                <h6 class="text-muted mb-1">Bounce Rate</h6>
-                                                <h3 class="mb-0" x-text="metrics.bounceRate + '%'">24.8%</h3>
-                                                <small class="trend-down">
-                                                    <i class="bi bi-arrow-down"></i> -1.8% from last month
-                                                </small>
-                                            </div>
-                                            <div class="stats-icon bg-danger bg-opacity-10 text-danger">
-                                                <i class="bi bi-arrow-counterclockwise"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Charts Row 1 -->
-                        <div class="row g-4 g-lg-5 g-xl-6 mb-5 mb-lg-5 mb-xl-6">
-                            <!-- Revenue Chart -->
-                            <div class="col-lg-8">
-                                <div class="card h-100">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h5 class="card-title mb-0">Revenue Analytics</h5>
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <input type="radio" class="btn-check" name="revenueView" id="revenue-daily" autocomplete="off" checked>
-                                            <label class="btn btn-outline-secondary" for="revenue-daily">Daily</label>
-                                            <input type="radio" class="btn-check" name="revenueView" id="revenue-weekly" autocomplete="off">
-                                            <label class="btn btn-outline-secondary" for="revenue-weekly">Weekly</label>
-                                            <input type="radio" class="btn-check" name="revenueView" id="revenue-monthly" autocomplete="off">
-                                            <label class="btn btn-outline-secondary" for="revenue-monthly">Monthly</label>
-                                        </div>
-                                    </div>
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div class="chart-container" style="position: relative; overflow: hidden;">
-                                            <div id="revenueChart"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Traffic Sources -->
-                            <div class="col-lg-4">
-                                <div class="card h-100">
-                                    <div class="card-header">
-                                        <h5 class="card-title mb-0">Traffic Sources</h5>
-                                    </div>
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div id="trafficSourcesChart" style="height: 200px;" class="mb-4"></div>
-                                        <div class="traffic-sources-list">
-                                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="me-2" style="width: 12px; height: 12px; background-color: #007bff; border-radius: 50%"></div>
-                                                    <span class="text-muted">Organic Search</span>
-                                                </div>
-                                                <div class="text-end">
-                                                    <div class="fw-medium">42.3%</div>
-                                                    <small class="text-muted">19,314</small>
-                                                </div>
-                                            </div>
-                                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="me-2" style="width: 12px; height: 12px; background-color: #28a745; border-radius: 50%"></div>
-                                                    <span class="text-muted">Direct</span>
-                                                </div>
-                                                <div class="text-end">
-                                                    <div class="fw-medium">31.8%</div>
-                                                    <small class="text-muted">14,519</small>
-                                                </div>
-                                            </div>
-                                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="me-2" style="width: 12px; height: 12px; background-color: #fd7e14; border-radius: 50%"></div>
-                                                    <span class="text-muted">Social Media</span>
-                                                </div>
-                                                <div class="text-end">
-                                                    <div class="fw-medium">16.4%</div>
-                                                    <small class="text-muted">7,490</small>
-                                                </div>
-                                            </div>
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="me-2" style="width: 12px; height: 12px; background-color: #e74c3c; border-radius: 50%"></div>
-                                                    <span class="text-muted">Referral</span>
-                                                </div>
-                                                <div class="text-end">
-                                                    <div class="fw-medium">9.5%</div>
-                                                    <small class="text-muted">4,349</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Charts Row 2 -->
-                        <div class="row g-4 g-lg-5 g-xl-6 mb-5 mb-lg-5 mb-xl-6">
-                            <!-- User Behavior -->
-                            <div class="col-lg-6">
-                                <div class="card h-100">
-                                    <div class="card-header">
-                                        <h5 class="card-title mb-0">User Behavior Flow</h5>
-                                    </div>
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div id="behaviorChart" style="height: 300px;"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Real-time Activity -->
-                            <div class="col-lg-6">
-                                <div class="card h-100">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <div class="d-flex align-items-center">
-                                            <h5 class="card-title mb-0 me-2">Real-time Activity</h5>
-                                            <span class="badge bg-success">LIVE</span>
-                                        </div>
-                                        <span class="text-muted">1,247 active users</span>
-                                    </div>
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div id="realTimeChart" style="height: 200px;" class="mb-4"></div>
-                                        <div class="row g-3">
-                                            <div class="col-6">
-                                                <div class="text-center">
-                                                    <h4 class="text-primary mb-1">8,452</h4>
-                                                    <small class="text-muted">Page Views</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="text-center">
-                                                    <h4 class="text-success mb-1">2,931</h4>
-                                                    <small class="text-muted">Sessions</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Data Tables & Geographic -->
-                        <div class="row g-4 g-lg-5 g-xl-6">
-                            <!-- Top Pages -->
-                            <div class="col-lg-8">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="card-title mb-0">Top Performing Pages</h5>
-                                    </div>
-                                    <div class="card-body p-0">
-                                        <div class="table-responsive">
-                                            <table class="table table-hover mb-0">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th>Page</th>
-                                                        <th>Views</th>
-                                                        <th>Unique Views</th>
-                                                        <th>Avg. Time</th>
-                                                        <th>Bounce Rate</th>
-                                                        <th>Conversion</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>
-                                                            <div class="fw-medium text-primary">/dashboard</div>
-                                                            <small class="text-muted">Main Dashboard</small>
-                                                        </td>
-                                                        <td class="fw-medium">12,847</td>
-                                                        <td>8,921</td>
-                                                        <td>4m 32s</td>
-                                                        <td><span class="badge bg-success">22.1%</span></td>
-                                                        <td>8.4%</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            <div class="fw-medium text-primary">/analytics</div>
-                                                            <small class="text-muted">Analytics Page</small>
-                                                        </td>
-                                                        <td class="fw-medium">9,234</td>
-                                                        <td>7,156</td>
-                                                        <td>6m 18s</td>
-                                                        <td><span class="badge bg-success">18.7%</span></td>
-                                                        <td>12.3%</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            <div class="fw-medium text-primary">/products</div>
-                                                            <small class="text-muted">Product Catalog</small>
-                                                        </td>
-                                                        <td class="fw-medium">7,892</td>
-                                                        <td>5,467</td>
-                                                        <td>3m 45s</td>
-                                                        <td><span class="badge bg-warning">45.2%</span></td>
-                                                        <td>6.7%</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            <div class="fw-medium text-primary">/checkout</div>
-                                                            <small class="text-muted">Checkout Process</small>
-                                                        </td>
-                                                        <td class="fw-medium">4,567</td>
-                                                        <td>3,891</td>
-                                                        <td>2m 23s</td>
-                                                        <td><span class="badge bg-success">15.6%</span></td>
-                                                        <td>67.8%</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>
-                                                            <div class="fw-medium text-primary">/contact</div>
-                                                            <small class="text-muted">Contact Form</small>
-                                                        </td>
-                                                        <td class="fw-medium">3,421</td>
-                                                        <td>2,876</td>
-                                                        <td>1m 54s</td>
-                                                        <td><span class="badge bg-danger">68.4%</span></td>
-                                                        <td>3.2%</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Geographic Data -->
-                            <div class="col-lg-4">
-                                <div class="card h-100">
-                                    <div class="card-header">
-                                        <h5 class="card-title mb-0">Geographic Distribution</h5>
-                                    </div>
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
-                                            <div class="d-flex align-items-center">
-                                                <div class="me-2" style="width: 24px; height: 18px; background-image: url('https://flagcdn.com/24x18/us.png'); background-size: cover; border-radius: 2px;"></div>
-                                                <span class="fw-medium">United States</span>
-                                            </div>
-                                            <div class="text-end">
-                                                <div class="fw-medium">38.2%</div>
-                                                <small class="text-muted">17,446</small>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
-                                            <div class="d-flex align-items-center">
-                                                <div class="me-2" style="width: 24px; height: 18px; background-image: url('https://flagcdn.com/24x18/gb.png'); background-size: cover; border-radius: 2px;"></div>
-                                                <span class="fw-medium">United Kingdom</span>
-                                            </div>
-                                            <div class="text-end">
-                                                <div class="fw-medium">22.7%</div>
-                                                <small class="text-muted">10,367</small>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
-                                            <div class="d-flex align-items-center">
-                                                <div class="me-2" style="width: 24px; height: 18px; background-image: url('https://flagcdn.com/24x18/ca.png'); background-size: cover; border-radius: 2px;"></div>
-                                                <span class="fw-medium">Canada</span>
-                                            </div>
-                                            <div class="text-end">
-                                                <div class="fw-medium">15.8%</div>
-                                                <small class="text-muted">7,215</small>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
-                                            <div class="d-flex align-items-center">
-                                                <div class="me-2" style="width: 24px; height: 18px; background-image: url('https://flagcdn.com/24x18/de.png'); background-size: cover; border-radius: 2px;"></div>
-                                                <span class="fw-medium">Germany</span>
-                                            </div>
-                                            <div class="text-end">
-                                                <div class="fw-medium">12.4%</div>
-                                                <small class="text-muted">5,663</small>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                <div class="me-2" style="width: 24px; height: 18px; background-image: url('https://flagcdn.com/24x18/au.png'); background-size: cover; border-radius: 2px;"></div>
-                                                <span class="fw-medium">Australia</span>
-                                            </div>
-                                            <div class="text-end">
-                                                <div class="fw-medium">10.9%</div>
-                                                <small class="text-muted">4,981</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Device & Browser Analytics -->
-                        <div class="row g-4 g-lg-5 g-xl-6 mt-4">
-                            <!-- Device Analytics -->
-                            <div class="col-lg-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="card-title mb-0">Device Analytics</h5>
-                                    </div>
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div class="row g-4">
-                                            <div class="col-md-6">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="device-icon me-3 bg-primary bg-opacity-10 text-primary">
-                                                        <i class="bi bi-laptop"></i>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <div class="d-flex justify-content-between mb-1">
-                                                            <span class="fw-medium">Desktop</span>
-                                                            <span class="text-muted">68.4%</span>
-                                                        </div>
-                                                        <div class="progress" style="height: 6px;">
-                                                            <div class="progress-bar bg-primary" style="width: 68.4%"></div>
-                                                        </div>
-                                                        <small class="text-muted">31,247 users</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="device-icon me-3 bg-success bg-opacity-10 text-success">
-                                                        <i class="bi bi-phone"></i>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <div class="d-flex justify-content-between mb-1">
-                                                            <span class="fw-medium">Mobile</span>
-                                                            <span class="text-muted">24.8%</span>
-                                                        </div>
-                                                        <div class="progress" style="height: 6px;">
-                                                            <div class="progress-bar bg-success" style="width: 24.8%"></div>
-                                                        </div>
-                                                        <small class="text-muted">11,327 users</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="device-icon me-3 bg-warning bg-opacity-10 text-warning">
-                                                        <i class="bi bi-tablet"></i>
-                                                    </div>
-                                                    <div class="flex-grow-1">
-                                                        <div class="d-flex justify-content-between mb-1">
-                                                            <span class="fw-medium">Tablet</span>
-                                                            <span class="text-muted">6.8%</span>
-                                                        </div>
-                                                        <div class="progress" style="height: 6px;">
-                                                            <div class="progress-bar bg-warning" style="width: 6.8%"></div>
-                                                        </div>
-                                                        <small class="text-muted">3,098 users</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Browser Analytics -->
-                            <div class="col-lg-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="card-title mb-0">Browser Distribution</h5>
-                                    </div>
-                                    <div class="card-body p-3 p-lg-4">
-                                        <div id="browserChart" style="height: 250px;"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                    </div> <!-- End Analytics Container -->
-
-                </div>
-            </main>
-
-            <!-- Footer -->
-            <footer class="admin-footer">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p class="mb-0 text-muted">© 2025 Modern Bootstrap Admin Template</p>
-                        </div>
-                        <div class="col-md-6 text-md-end">
-                            <p class="mb-0 text-muted">Built with Bootstrap 5.3.7</p>
                         </div>
                     </div>
                 </div>
-            </footer>
+
+                <!-- 2. Tổng doanh thu (Lifetime) -->
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <div class="card revenue-summary border-success border-start border-4">
+                            <div class="card-header bg-transparent">
+                                <h5 class="card-title mb-0 text-success">TỔNG DOANH THU</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="display-4 fw-bold text-purple" id="total-revenue">0đ</div>
+                                    <div class="ms-3 ps-3 border-start">
+                                        <div class="text-success small fw-bold">
+                                            <i class="bi bi-graph-up-arrow me-1"></i>Tăng trưởng ổn định
+                                        </div>
+                                        <div class="text-muted small">Tính từ ngày bắt đầu</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Hiệu suất theo thời gian -->
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">HIỆU SUẤT THEO THỜI GIAN</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="row g-0 text-center divide-x">
+                                    <!-- Hôm nay -->
+                                    <div class="col-md-3 p-4">
+                                        <div class="text-muted small text-uppercase fw-bold mb-2">Hôm nay</div>
+                                        <div class="h3 fw-bold mb-1" id="today-revenue">0đ</div>
+                                        <div class="small fw-bold" id="today-growth">
+                                            <i class="bi bi-dash"></i> 0%
+                                        </div>
+                                        <small class="text-muted d-block mt-1">vs hôm qua</small>
+                                    </div>
+                                    
+                                    <!-- Tuần này -->
+                                    <div class="col-md-3 p-4 border-start">
+                                        <div class="text-muted small text-uppercase fw-bold mb-2">Tuần này</div>
+                                        <div class="h3 fw-bold mb-1" id="week-revenue">0đ</div>
+                                        <div class="small fw-bold" id="week-growth">
+                                            <i class="bi bi-dash"></i> 0%
+                                        </div>
+                                        <small class="text-muted d-block mt-1">vs tuần trước</small>
+                                    </div>
+                                    
+                                    <!-- Tháng này -->
+                                    <div class="col-md-3 p-4 border-start">
+                                        <div class="text-muted small text-uppercase fw-bold mb-2">Tháng này</div>
+                                        <div class="h3 fw-bold mb-1" id="month-revenue">0đ</div>
+                                        <div class="small fw-bold" id="month-growth">
+                                            <i class="bi bi-dash"></i> 0%
+                                        </div>
+                                        <small class="text-muted d-block mt-1">vs tháng trước</small>
+                                    </div>
+                                    
+                                    <!-- Năm nay -->
+                                    <div class="col-md-3 p-4 border-start">
+                                        <div class="text-muted small text-uppercase fw-bold mb-2">Năm nay</div>
+                                        <div class="h3 fw-bold mb-1" id="year-revenue">0đ</div>
+                                        <div class="small fw-bold" id="year-growth">
+                                            <i class="bi bi-dash"></i> 0%
+                                        </div>
+                                        <small class="text-muted d-block mt-1">vs năm ngoái</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Đơn hàng mới nhất -->
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center bg-transparent">
+                                <h5 class="card-title mb-0">ĐƠN HÀNG MỚI NHẤT</h5>
+                                <a href="orders.html" class="btn btn-sm btn-light text-primary fw-medium">Xem tất cả</a>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light sticky-top text-muted small text-uppercase">
+                                            <tr>
+                                                <th class="ps-4">Mã đơn</th>
+                                                <th>Khách hàng</th>
+                                                <th>Ngày đặt</th>
+                                                <th>Sản phẩm</th>
+                                                <th>Tổng tiền</th>
+                                                <th class="pe-4 text-end">Trạng thái</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="border-top-0" id="recent-orders-list">
+                                            <!-- JS sẽ render vào đây -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Phương thức thanh toán -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-square bg-success bg-opacity-10 text-success rounded-3 p-3 me-3">
+                                        <i class="bi bi-cash-stack fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-muted text-uppercase mb-1">Thanh toán Tiền mặt (COD)</h6>
+                                        <h3 class="fw-bold mb-0" id="cod-amount">0đ</h3>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small mb-1">
+                                    <span>Tỷ trọng</span>
+                                    <span class="fw-bold text-success" id="cod-percent">0% tổng DT</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" id="cod-progress" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-square bg-primary bg-opacity-10 text-primary rounded-3 p-3 me-3">
+                                        <i class="bi bi-credit-card fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-muted text-uppercase mb-1">Chuyển khoản / Ví điện tử</h6>
+                                        <h3 class="fw-bold mb-0" id="momo-amount">0đ</h3>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small mb-1">
+                                    <span>Tỷ trọng</span>
+                                    <span class="fw-bold text-primary" id="momo-percent">0% tổng DT</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" id="momo-progress" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Doanh thu theo danh mục -->
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header bg-transparent">
+                                <h5 class="card-title mb-0">DOANH THU THEO DANH MỤC</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush" id="top-categories-list">
+                                    <!-- JS sẽ render vào đây -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. Tổng kết hôm nay -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card bg-primary text-white overflow-hidden">
+                            <div class="card-body text-center py-5 position-relative">
+                                <div class="position-relative z-1">
+                                    <h5 class="text-white-50 text-uppercase letter-spacing-1 mb-2">Tổng kết doanh thu hôm nay</h5>
+                                    <div class="display-3 fw-bold mb-4" id="today-summary-revenue">0đ</div>
+                                    <div class="row justify-content-center g-4">
+                                        <div class="col-md-3 border-end border-white-50">
+                                            <div class="h5 mb-0">Đơn hàng</div>
+                                            <div class="fs-4 fw-bold" id="today-orders-count">0</div>
+                                        </div>
+                                        <div class="col-md-3 border-end border-white-50">
+                                            <div class="h5 mb-0">Khách hàng</div>
+                                            <div class="fs-4 fw-bold" id="today-customers-count">0</div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="h5 mb-0">Tăng trưởng</div>
+                                            <div class="fs-4 fw-bold" id="today-growth-summary">0%</div>
+                                            <small class="text-white-50">So với hôm qua</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
 
         </div> <!-- /.admin-wrapper -->
     </div>
