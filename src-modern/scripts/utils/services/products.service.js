@@ -36,6 +36,6 @@ export const ProductsService = {
     },
 
     async getProductDetail(id) {
-        return await apiClient.get(`/products/${id}`); 
+        return await apiClient.get(`/api/webadmin/products/${id}`); 
     }
 };

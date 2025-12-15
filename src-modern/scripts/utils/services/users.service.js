@@ -24,6 +24,6 @@ export const UsersService = {
     },
 
     async getUserDetail(id) {
-        return await apiClient.get(`/users/${id}`);
+        return await apiClient.get(`/api/webadmin/users/${id}`);
     }
 };
