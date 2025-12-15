@@ -10,26 +10,42 @@ class ApiClient {
         this.baseURL = baseURL;
     }
 
+    // ==================== GET ====================
     async get(endpoint, params = {}) {
         const url = new URL(`${this.baseURL}${endpoint}`);
         
         // Thêm query params nếu có
-        Object.keys(params).forEach(key => 
+        Object.keys(params).forEach(key =>
             url.searchParams.append(key, params[key])
         );
 
         try {
+            // Lấy token từ localStorage
+            const token = localStorage.getItem('adminToken');
+            
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
+                    // Thêm token nếu có
+                    ...(token && { 'Authorization': `Bearer ${token}` })
                 },
             });
+
+            // Xử lý 401 - Token hết hạn
+            if (response.status === 401) {
+                console.warn('⚠️ Unauthorized! Redirecting to login...');
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('adminInfo');
+                localStorage.removeItem('loginTime');
+                window.location.href = '/login.html';
+                throw new Error('Phiên đăng nhập hết hạn');
+            }
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-            
+
             return await response.json();
         } catch (error) {
             console.error('❌ API Request Failed:', error);
@@ -37,20 +53,37 @@ class ApiClient {
         }
     }
 
+    // ==================== POST ====================
     async post(endpoint, data = {}) {
         try {
+            // Lấy token từ localStorage
+            const token = localStorage.getItem('adminToken');
+            
             const response = await fetch(`${this.baseURL}${endpoint}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    // Thêm token nếu có
+                    ...(token && { 'Authorization': `Bearer ${token}` })
                 },
                 body: JSON.stringify(data)
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            // Xử lý 401 - Token hết hạn
+            if (response.status === 401) {
+                console.warn('⚠️ Unauthorized! Redirecting to login...');
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('adminInfo');
+                localStorage.removeItem('loginTime');
+                window.location.href = '/login.html';
+                throw new Error('Phiên đăng nhập hết hạn');
             }
-            
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+            }
+
             return await response.json();
         } catch (error) {
             console.error('❌ API Request Failed:', error);
@@ -58,15 +91,31 @@ class ApiClient {
         }
     }
 
+    // ==================== PUT ====================
     async put(endpoint, data = {}) {
         try {
+            // Lấy token từ localStorage
+            const token = localStorage.getItem('adminToken');
+            
             const response = await fetch(`${this.baseURL}${endpoint}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    // Thêm token nếu có
+                    ...(token && { 'Authorization': `Bearer ${token}` })
                 },
                 body: JSON.stringify(data)
             });
+
+            // Xử lý 401 - Token hết hạn
+            if (response.status === 401) {
+                console.warn('⚠️ Unauthorized! Redirecting to login...');
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('adminInfo');
+                localStorage.removeItem('loginTime');
+                window.location.href = '/login.html';
+                throw new Error('Phiên đăng nhập hết hạn');
+            }
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -79,14 +128,30 @@ class ApiClient {
         }
     }
 
+    // ==================== DELETE ====================
     async delete(endpoint) {
         try {
+            // Lấy token từ localStorage
+            const token = localStorage.getItem('adminToken');
+            
             const response = await fetch(`${this.baseURL}${endpoint}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
+                    // Thêm token nếu có
+                    ...(token && { 'Authorization': `Bearer ${token}` })
                 },
             });
+
+            // Xử lý 401 - Token hết hạn
+            if (response.status === 401) {
+                console.warn('⚠️ Unauthorized! Redirecting to login...');
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('adminInfo');
+                localStorage.removeItem('loginTime');
+                window.location.href = '/login.html';
+                throw new Error('Phiên đăng nhập hết hạn');
+            }
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
