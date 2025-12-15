@@ -326,7 +326,7 @@ export class ProductsManager {
                 position: 'top',
                 horizontalAlign: 'left',
                 labels: {
-                    colors: '#fff'
+                    colors: '#646060ff'
                 }
             },
             grid: {
@@ -693,36 +693,42 @@ export class ProductsManager {
             <tr class="${this.selectedProducts.has(product._id) ? 'table-active' : ''}">
                 <td>
                     <input type="checkbox" 
-                           class="form-check-input product-checkbox" 
-                           value="${product._id}"
-                           ${this.selectedProducts.has(product._id) ? 'checked' : ''}>
+                        class="form-check-input product-checkbox" 
+                        value="${product._id}"
+                        ${this.selectedProducts.has(product._id) ? 'checked' : ''}
+                        onchange="window.productsManager.toggleProductSelection('${product._id}', this.checked)">
                 </td>
                 <td>
                     <div class="d-flex align-items-center">
-                        <img src="${product.imageUrl}" 
-                             class="rounded me-2" 
-                             width="40" 
-                             height="40" 
-                             style="object-fit: cover;"
-                             alt="${product.name}"
-                             onerror="this.onerror=null; this.src='assets/icons/icon-192.png'"
+                        <img src="${product.imageUrl || '/assets/icons/icon-192.png'}" 
+                            class="rounded me-2" 
+                            width="40" 
+                            height="40" 
+                            style="object-fit: cover;"
+                            alt="${product.name}"
+                            onerror="this.onerror=null; this.src='/assets/icons/icon-192.png'">
                         <div>
                             <div class="fw-medium text-white small">${product.name}</div>
-                            <small class="text-muted">${product.category}</small>
+                            <small class="text-muted">${product.category || 'N/A'}</small>
                         </div>
                     </div>
                 </td>
-                <td class="text-white">${product.price.toLocaleString('vi-VN')}đ</td>
-                <td class="text-center text-white">${product.stock}</td>
+                <td class="text-white">${(product.price || 0).toLocaleString('vi-VN')}đ</td>
+                <td class="text-center text-white">${product.stock || 0}</td>
                 <td>
                     <div class="d-flex align-items-center">
                         <i class="bi bi-star-fill text-warning me-1"></i>
-                        <span class="text-white">${product.rating.toFixed(1)}</span>
+                        <span class="text-white">${(product.rating || 0).toFixed(1)}</span>
                     </div>
                 </td>
                 <td>
-                    <span class="badge ${this.getStatusBadgeClass(product.status)}">
-                        ${this.getStatusText(product.status)}
+                    <span class="badge ${
+                        product.status === 'displayed' ? 'bg-success' :
+                        product.status === 'pending' ? 'bg-warning' :
+                        product.status === 'hidden' ? 'bg-secondary' :
+                        'bg-danger'
+                    }">
+                        ${product.status}
                     </span>
                 </td>
                 <td class="text-center text-secondary">${product.views || 0}</td>
@@ -736,11 +742,20 @@ export class ProductsManager {
                         </button>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit</a></li>
-                            <li><a class="dropdown-item view-product-detail-btn" href="#" data-product-id="${product._id}"><i class="bi bi-eye me-2"></i>View</a></li>
+                            
+                            <!-- ✅ ĐÃ SỬA: Gọi trực tiếp handleViewProduct -->
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="window.productsManager.handleViewProduct('${product._id}'); return false;">
+                                    <i class="bi bi-eye me-2"></i>View
+                                </a>
+                            </li>
+                            
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="#" onclick="window.productsManager.deleteProduct('${product._id}'); return false;">
-                                <i class="bi bi-trash me-2"></i>Delete
-                            </a></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="#" onclick="window.productsManager.deleteProduct('${product._id}'); return false;">
+                                    <i class="bi bi-trash me-2"></i>Delete
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </td>

@@ -1,5 +1,3 @@
-// src-modern/scripts/utils/services/products.service.js
-
 import { apiClient } from '../api.client.js';
 import { ENDPOINTS } from '../api.js';
 
@@ -34,22 +32,10 @@ export class ProductsService {
         }
     }
 
-    // ========== 4. GET CATEGORIES (QUAN TRỌNG - ĐÃ THÊM DEBUG) ==========
+    // ========== 4. GET CATEGORIES ==========
     static async getCategories() {
         try {
-            console.log('🌐 [ProductsService] Calling API:', ENDPOINTS.PRODUCTS.CATEGORIES);
-            
-            const result = await apiClient.get(ENDPOINTS.PRODUCTS.CATEGORIES);
-            
-            console.log('🌐 [ProductsService] Raw result from apiClient:', result);
-            console.log('🌐 [ProductsService] Result type:', typeof result);
-            console.log('🌐 [ProductsService] Is Array?', Array.isArray(result));
-            
-            if (result) {
-                console.log('🌐 [ProductsService] Result length:', Array.isArray(result) ? result.length : 'N/A');
-            }
-            
-            return result;
+            return await apiClient.get(ENDPOINTS.PRODUCTS.CATEGORIES);
         } catch (error) {
             console.error('❌ ProductsService.getCategories error:', error);
             throw error;
@@ -79,7 +65,8 @@ export class ProductsService {
     // ========== 7. DELETE PRODUCT ==========
     static async deleteProduct(id) {
         try {
-            return await apiClient.delete(`${ENDPOINTS.PRODUCTS.BASE}/${id}`);
+            // ✅ SỬA: Dùng trực tiếp đường dẫn thay vì BASE bị lỗi
+            return await apiClient.delete(`/api/webadmin/products/${id}`);
         } catch (error) {
             console.error('❌ ProductsService.deleteProduct error:', error);
             throw error;
@@ -102,7 +89,8 @@ export class ProductsService {
     // ========== 9. GET PRODUCT DETAIL ==========
     static async getProductDetail(id) {
         try {
-            return await apiClient.get(`${ENDPOINTS.PRODUCTS.BASE}/${id}`);
+            console.log('🌐 [ProductsService] Calling API Detail:', id);
+            return await apiClient.get(`/api/webadmin/products/${id}`);
         } catch (error) {
             console.error('❌ ProductsService.getProductDetail error:', error);
             throw error;
