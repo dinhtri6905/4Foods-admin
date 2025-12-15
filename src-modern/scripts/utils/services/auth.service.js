@@ -12,7 +12,7 @@ export const AuthService = {
      */
     async login(email, password) {
         try {
-            const response = await apiClient.post('/auth/login', { 
+            const response = await apiClient.post('/api/auth/login', { 
                 email, 
                 password 
             });
