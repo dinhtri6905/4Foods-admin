@@ -75,40 +75,136 @@ export class ProductsManager {
 
     async loadCategorySalesTimeline() {
         try {
-            this.data.categorySalesTimeline = await ProductsService.getCategorySalesTimeline();
+            console.log('🔄 [products.js] Loading category sales timeline...');
+            const response = await ProductsService.getCategorySalesTimeline();
+            
+            console.log('📡 [products.js] Timeline response:', response);
+            
+            // Xử lý response
+            if (response && response.series && response.labels) {
+                this.data.categorySalesTimeline = response;
+            } else if (Array.isArray(response)) {
+                // Nếu trả về array, chuyển đổi
+                this.data.categorySalesTimeline = {
+                    series: response,
+                    labels: []
+                };
+            } else {
+                console.warn('⚠️ Unknown timeline format');
+                this.data.categorySalesTimeline = { series: [], labels: [] };
+            }
+            
+            console.log('✅ [products.js] Final timeline data:', this.data.categorySalesTimeline);
         } catch (error) {
-            console.error('Error loading category sales timeline:', error);
+            console.error('❌ Error loading category sales timeline:', error);
+            this.data.categorySalesTimeline = { series: [], labels: [] };
         }
     }
 
     async loadTopSelling() {
         try {
-            this.data.topSelling = await ProductsService.getTopSelling();
+            console.log('🔄 [products.js] Loading top selling...');
+            const response = await ProductsService.getTopSelling();
+            
+            console.log('📡 [products.js] Top selling response:', response);
+            
+            if (Array.isArray(response)) {
+                this.data.topSelling = response;
+            } else if (response && Array.isArray(response.data)) {
+                this.data.topSelling = response.data;
+            } else if (response && Array.isArray(response.products)) {
+                this.data.topSelling = response.products;
+            } else {
+                console.warn('⚠️ Unknown top selling format');
+                this.data.topSelling = [];
+            }
+            
+            console.log('✅ [products.js] Final top selling data:', this.data.topSelling);
         } catch (error) {
-            console.error('Error loading top selling:', error);
+            console.error('❌ Error loading top selling:', error);
+            this.data.topSelling = [];
         }
     }
 
     async loadCategories() {
-      try {
-          console.log('🔄 Loading categories...');
-          this.data.categories = await ProductsService.getCategories();
-          console.log('✅ Categories loaded:', this.data.categories);
-          
-          if (!this.data.categories || this.data.categories.length === 0) {
-              console.warn('⚠️ No categories data received');
-          }
-      } catch (error) {
-          console.error('❌ Error loading categories:', error);
-          this.data.categories = [];
-      }
+        try {
+            console.log('🔄 [products.js] Loading categories...');
+            
+            // Bước 1: Gọi API
+            const response = await ProductsService.getCategories();
+            
+            // Bước 2: Debug response
+            console.log('📡 [products.js] Response from ProductsService:', response);
+            console.log('📡 [products.js] Response type:', typeof response);
+            console.log('📡 [products.js] Is Array?', Array.isArray(response));
+            
+            // Bước 3: Xử lý response
+            if (Array.isArray(response)) {
+                // Trường hợp 1: Response trực tiếp là array
+                console.log('✅ [products.js] Response is direct array');
+                this.data.categories = response;
+            } else if (response && typeof response === 'object') {
+                // Trường hợp 2: Response là object, cần lấy array bên trong
+                console.log('📦 [products.js] Response is object, checking fields...');
+                
+                if (Array.isArray(response.data)) {
+                    console.log('✅ [products.js] Found array in response.data');
+                    this.data.categories = response.data;
+                } else if (Array.isArray(response.categories)) {
+                    console.log('✅ [products.js] Found array in response.categories');
+                    this.data.categories = response.categories;
+                } else if (Array.isArray(response.items)) {
+                    console.log('✅ [products.js] Found array in response.items');
+                    this.data.categories = response.items;
+                } else {
+                    console.warn('⚠️ [products.js] Response is object but no array field found');
+                    console.warn('⚠️ [products.js] Response keys:', Object.keys(response));
+                    this.data.categories = [];
+                }
+            } else {
+                console.warn('⚠️ [products.js] Unknown response format');
+                this.data.categories = [];
+            }
+            
+            // Bước 4: Log kết quả cuối cùng
+            console.log('✅ [products.js] Final this.data.categories:', this.data.categories);
+            console.log('✅ [products.js] Categories count:', this.data.categories.length);
+            
+            if (this.data.categories.length > 0) {
+                console.log('✅ [products.js] First category sample:', this.data.categories[0]);
+            } else {
+                console.warn('⚠️ [products.js] No categories data after processing');
+            }
+            
+        } catch (error) {
+            console.error('❌ [products.js] Error loading categories:', error);
+            console.error('❌ [products.js] Error stack:', error.stack);
+            this.data.categories = [];
+        }
     }
 
     async loadCategoryDistribution() {
         try {
-            this.data.categoryDistribution = await ProductsService.getCategoryDistribution();
+            console.log('🔄 [products.js] Loading category distribution...');
+            const response = await ProductsService.getCategoryDistribution();
+            
+            console.log('📡 [products.js] Distribution response:', response);
+            
+            if (Array.isArray(response)) {
+                this.data.categoryDistribution = response;
+            } else if (response && Array.isArray(response.data)) {
+                this.data.categoryDistribution = response.data;
+            } else if (response && Array.isArray(response.distribution)) {
+                this.data.categoryDistribution = response.distribution;
+            } else {
+                console.warn('⚠️ Unknown distribution format');
+                this.data.categoryDistribution = [];
+            }
+            
+            console.log('✅ [products.js] Final distribution data:', this.data.categoryDistribution);
         } catch (error) {
-            console.error('Error loading category distribution:', error);
+            console.error('❌ Error loading category distribution:', error);
+            this.data.categoryDistribution = [];
         }
     }
 
@@ -144,97 +240,203 @@ export class ProductsManager {
 
     renderCategorySalesTimelineChart() {
         const chartEl = document.getElementById('categorySalesChart');
-        if (!chartEl) return;
-        if (this.charts.categorySales) this.charts.categorySales.destroy();
-
-        const { series, labels } = this.data.categorySalesTimeline;
-
-        if (!series || series.length === 0) {
-            chartEl.innerHTML = '<div class="text-center text-muted py-5">Chưa có dữ liệu</div>';
+        if (!chartEl) {
+            console.warn('⚠️ Chart element #categorySalesChart not found');
             return;
         }
 
+        // Destroy chart cũ nếu có
+        if (this.charts.categorySales) {
+            this.charts.categorySales.destroy();
+        }
+
+        const { series, labels } = this.data.categorySalesTimeline;
+        
+        console.log('🎨 Rendering category sales chart');
+        console.log('📊 Series:', series);
+        console.log('📊 Labels:', labels);
+
+        // Kiểm tra dữ liệu
+        if (!series || series.length === 0) {
+            console.warn('⚠️ No series data for chart');
+            chartEl.innerHTML = `
+                <div class="d-flex flex-column align-items-center justify-content-center" style="height: 300px;">
+                    <i class="bi bi-graph-up text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-3 mb-0">Chưa có dữ liệu doanh thu</p>
+                    <small class="text-secondary">Dữ liệu sẽ hiển thị khi có đơn hàng</small>
+                </div>
+            `;
+            return;
+        }
+
+        // Cấu hình chart
         const options = {
             series: series,
             chart: {
                 type: 'line',
-                height: 350,
-                toolbar: { show: false },
-                background: 'transparent'
+                height: 320,
+                background: 'transparent',
+                toolbar: {
+                    show: true,
+                    tools: {
+                        download: true,
+                        selection: false,
+                        zoom: false,
+                        zoomin: false,
+                        zoomout: false,
+                        pan: false,
+                        reset: false
+                    }
+                },
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    speed: 800
+                }
             },
             stroke: {
-                curve: 'smooth',
-                width: 3
+                width: 3,
+                curve: 'smooth'
             },
-            colors: ['#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#dc3545', '#fd7e14', '#ffc107', '#198754'],
-            dataLabels: { enabled: false },
             xaxis: {
                 categories: labels,
                 labels: {
-                    style: { colors: '#6c757d' }
+                    style: {
+                        colors: '#9ca3af',
+                        fontSize: '12px'
+                    }
                 }
             },
             yaxis: {
                 labels: {
-                    formatter: (val) => val > 1000 ? `${(val / 1000).toFixed(0)}K` : val,
-                    style: { colors: '#6c757d' }
+                    style: {
+                        colors: '#9ca3af',
+                        fontSize: '12px'
+                    },
+                    formatter: function(value) {
+                        return value ? value.toLocaleString('vi-VN') + 'đ' : '0đ';
+                    }
                 }
             },
-            grid: { borderColor: '#2d3748' },
+            dataLabels: {
+                enabled: false
+            },
             legend: {
+                show: true,
                 position: 'top',
-                labels: { colors: '#fff' }
+                horizontalAlign: 'left',
+                labels: {
+                    colors: '#fff'
+                }
+            },
+            grid: {
+                borderColor: '#374151',
+                strokeDashArray: 4
             },
             tooltip: {
+                theme: 'dark',
                 y: {
-                    formatter: (val) => `${val.toLocaleString('vi-VN')}đ`
-                },
-                theme: 'dark'
-            }
+                    formatter: function(value) {
+                        return value ? value.toLocaleString('vi-VN') + 'đ' : '0đ';
+                    }
+                }
+            },
+            colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
         };
 
         this.charts.categorySales = new ApexCharts(chartEl, options);
         this.charts.categorySales.render();
+        
+        console.log('✅ Category sales chart rendered');
     }
 
     renderTopSelling() {
         const container = document.getElementById('top-selling-list');
-        if (!container) return;
-
-        if (this.data.topSelling.length === 0) {
-            container.innerHTML = '<div class="text-center text-muted py-4">Chưa có dữ liệu</div>';
+        
+        console.log('🎨 Rendering top selling, container found:', !!container);
+        console.log('📦 Top selling data:', this.data.topSelling);
+        
+        if (!container) {
+            console.error('❌ Container #top-selling-list not found!');
             return;
         }
 
-        container.innerHTML = this.data.topSelling.map((product, index) => `
-            <div class="d-flex align-items-center p-3 border-bottom border-secondary">
-                <div class="me-3">
-                    <span class="badge ${index === 0 ? 'bg-warning' : index === 1 ? 'bg-secondary' : 'bg-info'} rounded-pill fs-5">
-                        ${index + 1}
-                    </span>
+        if (!this.data.topSelling || this.data.topSelling.length === 0) {
+            console.warn('⚠️ No top selling products to render');
+            container.innerHTML = `
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-trophy fs-1 d-block mb-3"></i>
+                    <p class="mb-0">Chưa có sản phẩm bán chạy</p>
+                    <small class="text-secondary">Dữ liệu sẽ hiển thị khi có đơn hàng</small>
                 </div>
-                <img src="${product.imageUrl}" 
-                     class="rounded me-3" 
-                     width="60" 
-                     height="60" 
-                     style="object-fit: cover;"
-                     alt="${product.name}"
-                     onerror="this.onerror=null; this.src='assets/icons/icon-192.png'"
-                <div class="flex-grow-1">
-                    <div class="fw-medium text-white">${product.name}</div>
-                    <small class="text-muted">${product.category}</small>
-                    <div class="d-flex align-items-center mt-1">
-                        <i class="bi bi-star-fill text-warning me-1"></i>
-                        <span class="text-white me-3">${product.rating.toFixed(1)}</span>
-                        <span class="text-primary fw-bold">${product.price.toLocaleString('vi-VN')}đ</span>
+            `;
+            return;
+        }
+
+        console.log('✅ Rendering', this.data.topSelling.length, 'top selling products');
+
+        container.innerHTML = this.data.topSelling.map((product, index) => {
+            // Xử lý URL ảnh
+            let imageUrl = '/assets/icons/icon-192.png';
+            
+            if (product.imageUrl) {
+                const rawUrl = product.imageUrl;
+                if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+                    imageUrl = rawUrl;
+                } else if (rawUrl.startsWith('/assets')) {
+                    imageUrl = rawUrl;
+                } else {
+                    const cleanPath = rawUrl.startsWith('/') ? rawUrl.substring(1) : rawUrl;
+                    imageUrl = `https://admin.4foods.app/${cleanPath}`;
+                }
+            }
+
+            return `
+                <div class="d-flex align-items-center p-3 bg-dark bg-opacity-50 rounded mb-2 position-relative">
+                    <!-- Rank Badge -->
+                    <div class="position-absolute top-0 start-0 m-2">
+                        <span class="badge ${index === 0 ? 'bg-warning' : index === 1 ? 'bg-secondary' : index === 2 ? 'bg-danger' : 'bg-primary'}" 
+                              style="font-size: 0.7rem;">
+                            #${index + 1}
+                        </span>
+                    </div>
+                    
+                    <!-- Product Image -->
+                    <img src="${imageUrl}" 
+                         class="rounded me-3" 
+                         width="60" 
+                         height="60" 
+                         style="object-fit: cover;"
+                         alt="${product.name}"
+                         onerror="this.onerror=null; this.src='/assets/icons/icon-192.png'">
+                    
+                    <!-- Product Info -->
+                    <div class="flex-grow-1">
+                        <div class="fw-medium text-white mb-1">${product.name}</div>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="text-primary fw-bold">${(product.price || 0).toLocaleString('vi-VN')}đ</span>
+                            ${product.rating ? `
+                                <span class="text-warning small">
+                                    <i class="bi bi-star-fill"></i> ${product.rating}
+                                </span>
+                            ` : ''}
+                        </div>
+                        <div class="d-flex gap-3 mt-1">
+                            <small class="text-muted">
+                                <i class="bi bi-box"></i> ${product.ordersCount || 0} đơn
+                            </small>
+                            ${product.category ? `
+                                <small class="text-info">
+                                    <i class="bi bi-tag"></i> ${product.category}
+                                </small>
+                            ` : ''}
+                        </div>
                     </div>
                 </div>
-                <div class="text-end">
-                    <div class="text-success fw-bold">${product.ordersCount}</div>
-                    <small class="text-muted">đơn hàng</small>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
+
+        console.log('✅ Top selling rendered successfully');
     }
 
     renderCategories() {
@@ -268,7 +470,7 @@ export class ProductsManager {
             return `
                 <div class="card bg-dark border-secondary mb-2">
                     <div class="card-header p-0">
-                        <button class="btn btn-link text-decoration-none text-white w-100 text-start p-3 d-flex justify-content-between align-items-center" 
+                        <button class="btn btn-link text-decoration-none text-white w-100 text-start p-3 d-flex justify-content-between align-items-center category-toggle" 
                                 type="button" 
                                 data-bs-toggle="collapse" 
                                 data-bs-target="#collapse-${index}"
@@ -278,33 +480,47 @@ export class ProductsManager {
                                 <i class="bi bi-tag-fill me-2 text-primary"></i>
                                 <strong>${cat.category}</strong>
                             </div>
-                            <div>
+                            <div class="d-flex align-items-center">
                                 <span class="badge bg-primary me-2">${cat.count} SP</span>
-                                <span class="text-success small">${(cat.totalValue || 0).toLocaleString('vi-VN')}đ</span>
-                                <i class="bi bi-chevron-down ms-2"></i>
+                                <span class="text-success small me-2">${(cat.totalValue || 0).toLocaleString('vi-VN')}đ</span>
+                                <i class="bi bi-chevron-down transition-icon"></i>
                             </div>
                         </button>
                     </div>
+                    
+                    <!-- ✅ QUAN TRỌNG: Không có class "show" => Mặc định đóng -->
                     <div id="collapse-${index}" class="collapse">
-                        <div class="card-body bg-secondary p-3">
+                        <div class="card-body bg-secondary bg-opacity-50 p-3">
                             ${cat.products && cat.products.length > 0 ? `
                                 <div class="row g-2">
                                     ${cat.products.map(product => `
-                                        <div class="col-md-6">
-                                            <div class="card bg-dark border-0">
+                                        <div class="col-md-6 col-lg-4">
+                                            <div class="card bg-dark border-0 h-100">
                                                 <div class="card-body p-2">
-                                                    <div class="d-flex">
-                                                        <img src="${product.imageUrl}" 
+                                                    <div class="d-flex align-items-start">
+                                                        <img src="${product.imageUrl || '/assets/icons/icon-192.png'}" 
                                                             class="rounded me-2" 
                                                             width="50" 
                                                             height="50" 
                                                             style="object-fit: cover;"
                                                             alt="${product.name}"
-                                                            onerror="this.onerror=null; this.src='assets/icons/icon-192.png'"
-                                                        <div class="flex-grow-1">
-                                                            <div class="fw-medium text-white small text-truncate">${product.name}</div>
-                                                            <div class="text-primary fw-bold small">${(product.price || 0).toLocaleString('vi-VN')}đ</div>
-                                                            <small class="text-muted">Stock: ${product.stock || 0}</small>
+                                                            onerror="this.onerror=null; this.src='/assets/icons/icon-192.png'"
+                                                        >
+                                                        <div class="flex-grow-1 overflow-hidden">
+                                                            <div class="fw-medium text-white small text-truncate" title="${product.name}">
+                                                                ${product.name}
+                                                            </div>
+                                                            <div class="text-primary fw-bold small">
+                                                                ${(product.price || 0).toLocaleString('vi-VN')}đ
+                                                            </div>
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <small class="text-muted">Stock: ${product.stock || 0}</small>
+                                                                ${product.rating ? `
+                                                                    <small class="text-warning">
+                                                                        <i class="bi bi-star-fill"></i> ${product.rating}
+                                                                    </small>
+                                                                ` : ''}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -314,7 +530,8 @@ export class ProductsManager {
                                 </div>
                             ` : `
                                 <div class="text-center text-muted py-3">
-                                    <small>Không có sản phẩm nào</small>
+                                    <i class="bi bi-box-seam"></i>
+                                    <small class="d-block mt-1">Không có sản phẩm nào</small>
                                 </div>
                             `}
                         </div>
@@ -323,48 +540,144 @@ export class ProductsManager {
             `;
         }).join('');
 
+        // ✅ THÊM: Event listener để xoay icon khi expand/collapse
+        this.initCategoryToggleAnimation();
+        
         console.log('✅ Categories rendered successfully');
+    }
+
+    /**
+     * Khởi tạo animation cho collapse icon
+     */
+    initCategoryToggleAnimation() {
+        const categoryToggles = document.querySelectorAll('.category-toggle');
+        
+        categoryToggles.forEach(toggle => {
+            const icon = toggle.querySelector('.transition-icon');
+            const collapseId = toggle.getAttribute('data-bs-target');
+            const collapseElement = document.querySelector(collapseId);
+            
+            if (collapseElement && icon) {
+                // Event khi đang mở
+                collapseElement.addEventListener('show.bs.collapse', () => {
+                    icon.style.transform = 'rotate(180deg)';
+                    icon.style.transition = 'transform 0.3s ease';
+                });
+                
+                // Event khi đang đóng
+                collapseElement.addEventListener('hide.bs.collapse', () => {
+                    icon.style.transform = 'rotate(0deg)';
+                    icon.style.transition = 'transform 0.3s ease';
+                });
+            }
+        });
     }
 
     renderCategoryDistributionChart() {
         const chartEl = document.getElementById('categoryDistributionChart');
-        if (!chartEl) return;
-        if (this.charts.distribution) this.charts.distribution.destroy();
-
-        if (this.data.categoryDistribution.length === 0) {
-            chartEl.innerHTML = '<div class="text-center text-muted py-5">Chưa có dữ liệu</div>';
+        
+        if (!chartEl) {
+            console.warn('⚠️ Chart element #categoryDistributionChart not found');
             return;
         }
 
-        const labels = this.data.categoryDistribution.map(d => d.category);
-        const series = this.data.categoryDistribution.map(d => d.count);
+        // Destroy chart cũ nếu có
+        if (this.charts.categoryDistribution) {
+            this.charts.categoryDistribution.destroy();
+        }
+
+        console.log('🎨 Rendering category distribution chart');
+        console.log('📊 Distribution data:', this.data.categoryDistribution);
+
+        // Kiểm tra dữ liệu
+        if (!this.data.categoryDistribution || this.data.categoryDistribution.length === 0) {
+            console.warn('⚠️ No distribution data for chart');
+            chartEl.innerHTML = `
+                <div class="d-flex flex-column align-items-center justify-content-center" style="height: 300px;">
+                    <i class="bi bi-pie-chart text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-3 mb-0">Chưa có dữ liệu phân bố</p>
+                    <small class="text-secondary">Thêm sản phẩm để xem phân bố category</small>
+                </div>
+            `;
+            return;
+        }
+
+        // Chuẩn bị dữ liệu cho chart
+        const labels = this.data.categoryDistribution.map(item => item.category || item._id);
+        const series = this.data.categoryDistribution.map(item => item.count || 0);
+
+        console.log('📊 Chart labels:', labels);
+        console.log('📊 Chart series:', series);
 
         const options = {
             series: series,
-            chart: { type: 'donut', height: 300, background: 'transparent' },
+            chart: {
+                type: 'donut',
+                height: 320,
+                background: 'transparent'
+            },
             labels: labels,
-            colors: ['#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#dc3545', '#fd7e14', '#ffc107', '#198754', '#20c997', '#0dcaf0'],
+            colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'],
             legend: {
+                show: true,
                 position: 'bottom',
-                fontSize: '12px',
-                labels: { colors: '#fff' }
+                labels: {
+                    colors: '#fff'
+                }
+            },
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '65%',
+                        labels: {
+                            show: true,
+                            name: {
+                                show: true,
+                                color: '#fff'
+                            },
+                            value: {
+                                show: true,
+                                color: '#fff',
+                                fontSize: '24px',
+                                fontWeight: 600
+                            },
+                            total: {
+                                show: true,
+                                label: 'Tổng SP',
+                                color: '#9ca3af',
+                                formatter: function (w) {
+                                    return w.globals.seriesTotals.reduce((a, b) => {
+                                        return a + b;
+                                    }, 0);
+                                }
+                            }
+                        }
+                    }
+                }
             },
             dataLabels: {
                 enabled: true,
-                formatter: (val) => `${val.toFixed(1)}%`,
-                style: { fontSize: '12px', fontWeight: 'bold', colors: ['#fff'] }
+                style: {
+                    colors: ['#fff']
+                },
+                dropShadow: {
+                    enabled: false
+                }
             },
             tooltip: {
-                y: { formatter: (val) => `${val} sản phẩm` },
-                theme: 'dark'
-            },
-            plotOptions: {
-                pie: { donut: { size: '65%' } }
+                theme: 'dark',
+                y: {
+                    formatter: function(value) {
+                        return value + ' sản phẩm';
+                    }
+                }
             }
         };
 
-        this.charts.distribution = new ApexCharts(chartEl, options);
-        this.charts.distribution.render();
+        this.charts.categoryDistribution = new ApexCharts(chartEl, options);
+        this.charts.categoryDistribution.render();
+        
+        console.log('✅ Category distribution chart rendered');
     }
 
     renderProductsList() {
