@@ -32,7 +32,8 @@ export default defineConfig({
         reports: resolve(fileURLToPath(new URL('.', import.meta.url)), 'src-modern/reports.html'),
         security: resolve(fileURLToPath(new URL('.', import.meta.url)), 'src-modern/security.html'),
         settings: resolve(fileURLToPath(new URL('.', import.meta.url)), 'src-modern/settings.html'),
-        users: resolve(fileURLToPath(new URL('.', import.meta.url)), 'src-modern/users.html')
+        users: resolve(fileURLToPath(new URL('.', import.meta.url)), 'src-modern/users.html'),
+        login: resolve(fileURLToPath(new URL('.', import.meta.url)), 'src-modern/login.html')
       }
     }
   },
