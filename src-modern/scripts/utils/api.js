@@ -2,7 +2,7 @@
 
 export const API_CONFIG = {
     // BASE_URL: 'http://157.66.101.113:5000', 
-    BASE_URL: 'https://admin.4foods.app',
+    BASE_URL: 'https://admin.4foods.app/api',
     TIMEOUT: 10000,
 };
 
