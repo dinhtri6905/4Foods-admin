@@ -128,88 +128,98 @@ export class ProductsManager {
     }
 
     async loadCategories() {
-        try {
-            console.log('🔄 [products.js] Loading categories...');
-            const response = await ProductsService.getCategories();
-            console.log('📡 [products.js] Response from ProductsService:', response);
-            console.log('📡 [products.js] Response type:', typeof response);
-            console.log('📡 [products.js] Is Array?', Array.isArray(response));
+    try {
+        console.log('[products.js] Loading categories...');
+        const response = await ProductsService.getCategories();
+        
+        console.log('[products.js] Response from ProductsService:', response);
+        console.log('[products.js] Response type:', typeof response);
+        console.log('[products.js] Is Array?', Array.isArray(response));
 
-            if (Array.isArray(response)) {
-                console.log('✅ [products.js] Response is direct array');
-                this.data.categories = response;
-            } else if (response && typeof response === 'object') {
-                console.log('📦 [products.js] Response is object, checking fields...');
-                if (Array.isArray(response.data)) {
-                    console.log('✅ [products.js] Found array in response.data');
-                    this.data.categories = response.data;
-                } else if (Array.isArray(response.categories)) {
-                    console.log('✅ [products.js] Found array in response.categories');
-                    this.data.categories = response.categories;
-                } else if (Array.isArray(response.items)) {
-                    console.log('✅ [products.js] Found array in response.items');
-                    this.data.categories = response.items;
-                } else {
-                    console.warn('⚠️ [products.js] Response is object but no array field found');
-                    console.warn('⚠️ [products.js] Response keys:', Object.keys(response));
-                    this.data.categories = [];
-                }
-            } else {
-                console.warn('⚠️ [products.js] Unknown response format');
-                this.data.categories = [];
-            }
-
-            // ✅ THÊM: Gộp các category trùng lặp
-            if (this.data.categories.length > 0) {
-                const mergedCategories = {};
-
-                this.data.categories.forEach(cat => {
-                    const categoryId = cat.category || cat._id;
-                    const displayName = getCategoryName(categoryId);
-
-                    // Nếu đã tồn tại category này, cộng dồn dữ liệu
-                    if (mergedCategories[displayName]) {
-                        mergedCategories[displayName].count += cat.count || 0;
-                        mergedCategories[displayName].totalValue += cat.totalValue || 0;
-                        
-                        // Gộp products nếu có
-                        if (cat.products && Array.isArray(cat.products)) {
-                            mergedCategories[displayName].products = [
-                                ...mergedCategories[displayName].products,
-                                ...cat.products
-                            ];
-                        }
-                    } else {
-                        // Tạo mới
-                        mergedCategories[displayName] = {
-                            category: displayName,
-                            _id: categoryId, // Giữ ID gốc để filter
-                            count: cat.count || 0,
-                            totalValue: cat.totalValue || 0,
-                            products: cat.products || []
-                        };
-                    }
-                });
-
-                // Chuyển object thành array và sắp xếp
-                this.data.categories = Object.values(mergedCategories)
-                    .sort((a, b) => b.totalValue - a.totalValue); // Sắp xếp theo doanh thu giảm dần
-
-                console.log('✅ [products.js] Categories after merging:', this.data.categories);
-            }
-
-            console.log('✅ [products.js] Final this.data.categories:', this.data.categories);
-            console.log('✅ [products.js] Categories count:', this.data.categories.length);
-            if (this.data.categories.length > 0) {
-                console.log('✅ [products.js] First category sample:', this.data.categories[0]);
-            } else {
-                console.warn('⚠️ [products.js] No categories data after processing');
-            }
-        } catch (error) {
-            console.error('❌ [products.js] Error loading categories:', error);
-            console.error('❌ [products.js] Error stack:', error.stack);
+        // Xử lý response format
+        if (Array.isArray(response)) {
+        console.log('[products.js] Response is direct array');
+        this.data.categories = response;
+        } else if (response && typeof response === 'object') {
+        console.log('[products.js] Response is object, checking fields...');
+        
+        if (Array.isArray(response.data)) {
+            console.log('[products.js] Found array in response.data');
+            this.data.categories = response.data;
+        } else if (Array.isArray(response.categories)) {
+            console.log('[products.js] Found array in response.categories');
+            this.data.categories = response.categories;
+        } else if (Array.isArray(response.items)) {
+            console.log('[products.js] Found array in response.items');
+            this.data.categories = response.items;
+        } else {
+            console.warn('[products.js] Response is object but no array field found');
+            console.warn('[products.js] Response keys:', Object.keys(response));
             this.data.categories = [];
         }
+        } else {
+        console.warn('[products.js] Unknown response format');
+        this.data.categories = [];
+        }
+
+        // ✅ FIX: Gộp các category trùng lặp
+        if (this.data.categories.length > 0) {
+        const mergedCategories = {};
+
+        this.data.categories.forEach(cat => {
+            const categoryId = cat.category || cat.id;
+            const displayName = getCategoryName(categoryId);
+
+            // Nếu đã tồn tại category này, cộng dồn dữ liệu
+            if (mergedCategories[displayName]) {
+            mergedCategories[displayName].count += (cat.count || 0);
+            mergedCategories[displayName].totalValue += (cat.totalValue || 0);
+            
+            // ✅ FIX: Gộp products nếu có - Xử lý đúng undefined/null
+            if (cat.products && Array.isArray(cat.products) && cat.products.length > 0) {
+                // Đảm bảo products array đã được khởi tạo
+                if (!mergedCategories[displayName].products) {
+                mergedCategories[displayName].products = [];
+                }
+                mergedCategories[displayName].products = [
+                ...mergedCategories[displayName].products,
+                ...cat.products
+                ];
+            }
+            } else {
+            // Tạo mới
+            mergedCategories[displayName] = {
+                category: displayName,
+                id: categoryId, // Giữ ID gốc để filter
+                count: cat.count || 0,
+                totalValue: cat.totalValue || 0,
+                // ✅ FIX: Luôn khởi tạo products là array, không để undefined
+                products: (cat.products && Array.isArray(cat.products)) ? cat.products : []
+            };
+            }
+        });
+
+        // Chuyển object thành array và sắp xếp
+        this.data.categories = Object.values(mergedCategories)
+            .sort((a, b) => b.totalValue - a.totalValue); // Sắp xếp theo doanh thu giảm dần
+        
+        console.log('[products.js] Categories after merging:', this.data.categories);
+        }
+
+        console.log('[products.js] Final this.data.categories:', this.data.categories);
+        console.log('[products.js] Categories count:', this.data.categories.length);
+        
+        if (this.data.categories.length > 0) {
+        console.log('[products.js] First category sample:', this.data.categories[0]);
+        } else {
+        console.warn('[products.js] No categories data after processing');
+        }
+        
+    } catch (error) {
+        console.error('[products.js] Error loading categories:', error);
+        console.error('[products.js] Error stack:', error.stack);
+        this.data.categories = [];
+    }
     }
 
     async loadCategoryDistribution() {
@@ -484,110 +494,108 @@ export class ProductsManager {
     }
 
     renderCategories() {
-        const container = document.getElementById('categories-list');
-        
-        console.log('🎨 Rendering categories, container found:', !!container);
-        console.log('📦 Categories data:', this.data.categories);
-        
-        if (!container) {
-            console.error('❌ Container #categories-list not found!');
-            return;
-        }
+    const container = document.getElementById('categories-list');
+    
+    console.log('Rendering categories, container found:', !!container);
+    console.log('Categories data:', this.data.categories);
+    
+    if (!container) {
+        console.error('Container categories-list not found!');
+        return;
+    }
 
-        if (!this.data.categories || this.data.categories.length === 0) {
-            console.warn('⚠️ No categories to render');
-            container.innerHTML = `
-                <div class="text-center text-muted py-5">
-                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                    <p class="mb-0">Chưa có category nào trong database</p>
-                    <small class="text-secondary">Hãy thêm sản phẩm với category để hiển thị</small>
+    if (!this.data.categories || this.data.categories.length === 0) {
+        console.warn('No categories to render');
+        container.innerHTML = `
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+            <p class="mb-0">Chưa có category nào trong database</p>
+            <small class="text-secondary">Hãy thêm sản phẩm với category để hiển thị</small>
+        </div>
+        `;
+        return;
+    }
+
+    console.log('Rendering', this.data.categories.length, 'categories...');
+
+    container.innerHTML = this.data.categories.map((cat, index) => {
+        console.log(`Rendering category ${index}:`, cat.category, 'with', cat.products?.length || 0, 'products');
+        
+        return `
+        <div class="card bg-dark border-secondary mb-2">
+            <div class="card-header p-0">
+            <button class="btn btn-link text-decoration-none text-white w-100 text-start p-3 d-flex justify-content-between align-items-center category-toggle"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapse-${index}"
+                    aria-expanded="false"
+                    aria-controls="collapse-${index}">
+                <div class="d-flex align-items-center">
+                <i class="bi bi-tag-fill me-2 text-primary"></i>
+                <strong>${getCategoryName(cat.category)}</strong>
                 </div>
-            `;
-            return;
-        }
-
-        console.log('✅ Rendering', this.data.categories.length, 'categories');
-
-        container.innerHTML = this.data.categories.map((cat, index) => {
-            console.log(`Rendering category ${index}:`, cat.category, 'with', cat.products?.length || 0, 'products');
+                <div class="d-flex align-items-center">
+                <span class="badge bg-primary me-2">${cat.count} SP</span>
+                <span class="text-success small me-2">${(cat.totalValue || 0).toLocaleString('vi-VN')}đ</span>
+                <i class="bi bi-chevron-down transition-icon"></i>
+                </div>
+            </button>
+            </div>
             
-            return `
-                <div class="card bg-dark border-secondary mb-2">
-                    <div class="card-header p-0">
-                        <button class="btn btn-link text-decoration-none text-white w-100 text-start p-3 d-flex justify-content-between align-items-center category-toggle" 
-                                type="button" 
-                                data-bs-toggle="collapse" 
-                                data-bs-target="#collapse-${index}"
-                                aria-expanded="false"
-                                aria-controls="collapse-${index}">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-tag-fill me-2 text-primary"></i>
-                                <strong>${getCategoryName(cat.category)}</strong>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-primary me-2">${cat.count} SP</span>
-                                <span class="text-success small me-2">${(cat.totalValue || 0).toLocaleString('vi-VN')}đ</span>
-                                <i class="bi bi-chevron-down transition-icon"></i>
-                            </div>
-                        </button>
-                    </div>
-                    
-                    <!-- ✅ QUAN TRỌNG: Không có class "show" => Mặc định đóng -->
-                    <div id="collapse-${index}" class="collapse">
-                        <div class="card-body bg-secondary bg-opacity-50 p-3">
-                            ${cat.products && cat.products.length > 0 ? `
-                                <div class="row g-2">
-                                    ${cat.products.map(product => `
-                                        <div class="col-md-6 col-lg-4">
-                                            <div class="card bg-dark border-0 h-100">
-                                                <div class="card-body p-2">
-                                                    <div class="d-flex align-items-start">
-                                                        <img src="${product.imageUrl || '/assets/icons/icon-192.png'}" 
-                                                            class="rounded me-2" 
-                                                            width="50" 
-                                                            height="50" 
-                                                            style="object-fit: cover;"
-                                                            alt="${product.name}"
-                                                            onerror="this.onerror=null; this.src='/assets/icons/icon-192.png'"
-                                                        >
-                                                        <div class="flex-grow-1 overflow-hidden">
-                                                            <div class="fw-medium text-white small text-truncate" title="${product.name}">
-                                                                ${product.name}
-                                                            </div>
-                                                            <div class="text-primary fw-bold small">
-                                                                ${(product.price || 0).toLocaleString('vi-VN')}đ
-                                                            </div>
-                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                <small class="text-muted">Stock: ${product.stock || 0}</small>
-                                                                ${product.rating ? `
-                                                                    <small class="text-warning">
-                                                                        <i class="bi bi-star-fill"></i> ${product.rating}
-                                                                    </small>
-                                                                ` : ''}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    `).join('')}
+            <!-- QUAN TRỌNG: Không có class "show" = Mặc định đóng -->
+            <div id="collapse-${index}" class="collapse">
+            <div class="card-body bg-secondary bg-opacity-50 p-3">
+                ${/* ✅ FIX: Kiểm tra chính xác products */ ''}
+                ${(Array.isArray(cat.products) && cat.products.length > 0) ? `
+                <div class="row g-2">
+                    ${cat.products.map(product => `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card bg-dark border-0 h-100">
+                        <div class="card-body p-2">
+                            <div class="d-flex align-items-start">
+                            <img src="${product.imageUrl || 'assets/icons/icon-192.png'}" 
+                                class="rounded me-2" 
+                                width="50" height="50" 
+                                style="object-fit: cover"
+                                alt="${product.name}"
+                                onerror="this.onerror=null; this.src='assets/icons/icon-192.png'">
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="fw-medium text-white small text-truncate" title="${product.name}">
+                                ${product.name}
                                 </div>
-                            ` : `
-                                <div class="text-center text-muted py-3">
-                                    <i class="bi bi-box-seam"></i>
-                                    <small class="d-block mt-1">Không có sản phẩm nào</small>
+                                <div class="text-primary fw-bold small">
+                                ${(product.price || 0).toLocaleString('vi-VN')}đ
                                 </div>
-                            `}
+                                <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Stock: ${product.stock || 0}</small>
+                                ${product.rating ? `
+                                    <small class="text-warning">
+                                    <i class="bi bi-star-fill"></i> ${product.rating}
+                                    </small>
+                                ` : ''}
+                                </div>
+                            </div>
+                            </div>
+                        </div>
                         </div>
                     </div>
+                    `).join('')}
                 </div>
-            `;
-        }).join('');
+                ` : `
+                <div class="text-center text-muted py-3">
+                    <i class="bi bi-box-seam"></i>
+                    <small class="d-block mt-1">Không có sản phẩm nào</small>
+                </div>
+                `}
+            </div>
+            </div>
+        </div>
+        `;
+    }).join('');
 
-        // ✅ THÊM: Event listener để xoay icon khi expand/collapse
-        this.initCategoryToggleAnimation();
-        
-        console.log('✅ Categories rendered successfully');
+    // THÊM: Event listener xoay icon khi expand/collapse
+    this.initCategoryToggleAnimation();
+    console.log('Categories rendered successfully');
     }
 
     /**
@@ -1139,46 +1147,62 @@ export class ProductsManager {
     }    
 
     populateCategoryFilter() {
-        const categoryFilter = document.getElementById('category-filter');
-        if (!categoryFilter) return;
+    const categoryFilter = document.getElementById('category-filter');
+    if (!categoryFilter) return;
 
-        const categories = [...new Set(this.data.categories.map(c => c.category))];
-        
-        categoryFilter.innerHTML = '<option value="">Tất cả category</option>' + 
-            categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+    // ✅ FIX: Lấy category GỐC (id) thay vì displayName
+    const categories = [...new Set(this.data.categories.map(c => c.id || c.category))];
+    
+    // Tạo options với value là ID gốc, text là tên hiển thị
+    categoryFilter.innerHTML = `
+        <option value="">Tất cả category</option>
+        ${categories.map(cat => `
+        <option value="${cat}">${getCategoryName(cat)}</option>
+        `).join('')}
+    `;
+    
+    console.log('[populateCategoryFilter] Categories for filter:', categories);
     }
 
     setupEventListeners() {
-        // Search
-        const searchInput = document.getElementById('search-input');
-        if (searchInput) {
-            let timeout;
-            searchInput.addEventListener('input', (e) => {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    this.filters.search = e.target.value;
-                    this.currentPage = 1;
-                    this.loadProductsList().then(() => this.renderProductsList());
-                }, 500);
-            });
-        }
-
-        // Filters
-        const filterIds = ['category-filter', 'status-filter', 'min-price-filter', 'max-price-filter'];
-        filterIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.addEventListener('change', (e) => {
-                    if (id === 'category-filter') this.filters.category = e.target.value;
-                    if (id === 'status-filter') this.filters.status = e.target.value;
-                    if (id === 'min-price-filter') this.filters.minPrice = e.target.value;
-                    if (id === 'max-price-filter') this.filters.maxPrice = e.target.value;
-                    
-                    this.currentPage = 1;
-                    this.loadProductsList().then(() => this.renderProductsList());
-                });
-            }
+    // Search
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        let timeout;
+        searchInput.addEventListener('input', (e) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            this.filters.search = e.target.value;
+            this.currentPage = 1;
+            console.log('[Search] Query:', this.filters.search);
+            this.loadProductsList().then(() => this.renderProductsList());
+        }, 500);
         });
+    }
+
+    // Filters
+    const filterIds = ['category-filter', 'status-filter', 'min-price-filter', 'max-price-filter'];
+    filterIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+        el.addEventListener('change', (e) => {
+            // ✅ FIX: Lấy value (category gốc), không phải text
+            if (id === 'category-filter') {
+            this.filters.category = e.target.value; // Value là category ID gốc
+            console.log('[Filter Category] Selected:', this.filters.category);
+            }
+            if (id === 'status-filter') {
+            this.filters.status = e.target.value;
+            console.log('[Filter Status] Selected:', this.filters.status);
+            }
+            if (id === 'min-price-filter') this.filters.minPrice = e.target.value;
+            if (id === 'max-price-filter') this.filters.maxPrice = e.target.value;
+            
+            this.currentPage = 1;
+            this.loadProductsList().then(() => this.renderProductsList());
+        });
+        }
+    });
 
         // Checkboxes
         document.addEventListener('change', (e) => {
