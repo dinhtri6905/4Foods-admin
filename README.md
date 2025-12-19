@@ -235,6 +235,8 @@ products.service.js: Quản lý sản phẩm: lấy tổng quan, timeline doanh 
 
 users.service.js: Quản lý người dùng: lấy tổng quan, biểu đồ tăng trưởng, hoạt động gần đây, danh bạ, bulk action.
 ```
+Component → Service → ApiClient → API Server → ApiClient → Service → Component → Giao diện
+
 
 ## 🎯 Available Scripts
 

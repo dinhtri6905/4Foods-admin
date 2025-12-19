@@ -21,7 +21,9 @@ export const ENDPOINTS = {
         ACTIVITY: '/api/webadmin/dashboard/activities',
         RECENT_ORDERS: '/api/webadmin/dashboard/recent-orders',
         ORDER_STATUS: '/api/webadmin/dashboard/order-status',
-        USER_GROWTH: '/api/webadmin/dashboard/user-growth'
+        USER_GROWTH: '/api/webadmin/dashboard/user-growth',
+        PENDING_PRODUCTS: '/api/webadmin/dashboard/pending-products',
+        REVIEW_PRODUCT: '/api/webadmin/dashboard/review-product'
     },
 
     // ==================== ANALYTICS ====================
